@@ -304,40 +304,32 @@
 (define delete
   (lambda (tree v)
     (letrec ((d (vector-length v))
+	     (aux-leaf (lambda (leaf)
+			 (if (or (empty? leaf)
+				 (equal? v (car leaf)))
+			     'empty
+			     leaf)))
 	     (aux (lambda (tree k)
-		    (cond ((empty? tree) tree)
-			  ((leaf? tree)
-			   (or (and (equal? (car tree) v) empty)
-			       tree))
-			  (else
-			   ;; tricky case is if root is vertex to be deleted;
-			   ;; propsal: find nearest neighbor and delete that from subtree,
-			   ;; recombine with that at root?
-			   
-			   ;; unsatisfying proposal: if this is the case, just rebuild the tree
-			   ;; from this dimension ....
-
-			   ;; another one:
-			   ;; keep track of size?
-			   ;; delete min from right or max form left by a given dimension and
-			   ;; set that to root
-			   (let* ((r (car (root tree)))
-				  (vk (vector-ref v k))
-				  (rk (vector-ref r k))
-				  (k* (mod (1+ k) d)))
-			     (cond ((and (= vk rk) (equal? v r))
-				    (node k (cons v x)
-					  (%kd-L tree)
-					  (%kd-R tree)))
-				   ((or (< vk rk)
-					(and (= vk rk) (v:< v r)))
-				    (node k (root tree)
-					  (aux (%kd-L tree) k*)
-					  (%kd-R tree)))
-				   (else
-				    (node k (root tree)
-					  (%kd-L tree)
-					  (aux (%kd-R tree) k*))))))))))
+		    (if (%kd? tree)
+			(let* ((rt (%kd-root tree))
+			       (r (car rt))
+			       (vk (vector-ref v k))
+			       (rk (vector-ref r k))
+			       (k* (mod (1+ k) d))
+			       (L (%kd-L tree))
+			       (R (%kd-R tree)))
+			  (cond ((< vk rk)
+				 (join rt (aux L k*) R k))
+				((> vk rk)
+				 (join rt L (aux R k*) k))
+				((equal? r v)
+				 (if (< (size L) (size R))
+				     (let ((v* (min-in-dimension R k d)))
+				       (join v* L (delete R (car v*)) k))
+				     (let ((v* (max-in-dimension L k d)))
+				       (join v* (delete L (car v*)) R k))))
+				(else (join rt (aux L k*) (aux R k*) k))))
+			(aux-leaf tree)))))
       (aux tree 0))))
 
 (define tree->alist

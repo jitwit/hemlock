@@ -4,6 +4,7 @@
 	  ;; construct/modify
 	  kd-tree
 	  insert
+	  delete
 	  tree-map
 	  
 	  ;; query
