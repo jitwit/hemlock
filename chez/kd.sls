@@ -1,6 +1,7 @@
 (library (chez kd)
   (export empty?
 	  leaf?
+	  
 	  ;; construct/modify
 	  alist->tree
 	  insert
@@ -8,6 +9,7 @@
 	  tree-map
 	  
 	  ;; query
+	  size
 	  lookup
 	  closed-nhood
 	  open-nhood
