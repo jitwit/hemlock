@@ -12,6 +12,8 @@
 	  open-nhood
 	  nearest-neighbor
 	  nearest-node
+	  min-in-dimension
+	  max-in-dimension
 
 	  ;; destruct
 	  tree->alist
