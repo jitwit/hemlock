@@ -1,4 +1,3 @@
-
 (define square
   (lambda (x)
     (* x x)))
@@ -30,8 +29,10 @@
 
 (define node
   (lambda (axis root L R)
-    (list axis root L R)))
-  
+    (if (and (empty? L) (empty? R))
+	root
+	(list axis root L R))))
+
 (define root
   (lambda (kd)
     (and (not (empty? kd))
@@ -74,9 +75,9 @@
 	     (query (lambda (tree k)
 		      (cond ((empty? tree) '())
 			    ((leaf? tree) (if (<= (dist v (car tree))
-						     radius)
-						 `(,tree)
-						 '()))
+						  radius)
+					      `(,tree)
+					      '()))
 			    (else
 			     (let* ((r (root tree))
 				    (rk (vector-ref (car r) k))
@@ -98,9 +99,9 @@
 	     (query (lambda (tree k)
 		      (cond ((empty? tree) '())
 			    ((leaf? tree) (if (< (dist v (car tree))
-						    radius)
-						 `(,tree)
-						 '()))
+						 radius)
+					      `(,tree)
+					      '()))
 			    (else
 			     (let* ((r (root tree))
 				    (rk (vector-ref (car r) k))
@@ -115,6 +116,39 @@
 					     ,@(query r k*)
 					     ,@(query R k*))))))))))
       (query tree 0))))
+
+(define nearest-neighbor
+  (lambda (tree v)
+    (letrec ((d (vector-length v))
+	     (w #f)
+	     (x #f)
+	     (query (lambda (tree k)
+		      (cond ((empty? tree) (void))
+			    ((leaf? tree)
+			     (let* ((r (car tree))
+				    (y (dist v r)))
+			       (when (< y x)
+				 (set! x y)
+				 (set! w r))))
+			    (else
+			     (let* ((r (root tree))
+				    (rk (vector-ref (car r) k))
+				    (vk (vector-ref v k))
+				    (dk (- vk rk))
+				    (k* (mod (1+ k) d))
+				    (L (left tree))
+				    (R (right tree)))
+			       (query r k*)
+			       (when (and (<= 0 dk) (<= dk x))
+				 (query R k*))
+			       (when (and (<= dk 0) (<= (- dk) x))
+				 (query L k*))))))))
+      (and (not (empty? tree))
+	   (begin
+	     (set! w (car (root tree)))
+	     (set! x (dist v w))
+	     (query tree 0)
+	     w)))))
 
 (define lookup
   (lambda (tree v)
@@ -178,6 +212,26 @@
 					  (aux (right tree) k*))))))))))
       (aux tree 0))))
 
+(define tree->alist
+  (lambda (tree)
+    (letrec ((aux (lambda (tree)
+		    (cond ((empty? tree) '())
+			  ((leaf? tree) `(,tree))
+			  (else `(,@(aux (left tree))
+				  ,(root tree)
+				  ,@(aux (right tree))))))))
+      (aux tree))))
+
+(define tree->keys
+  (lambda (tree)
+    (letrec ((aux (lambda (tree)
+		    (cond ((empty? tree) '())
+			  ((leaf? tree) `(,(car tree)))
+			  (else `(,@(aux (left tree))
+				  ,(car (root tree))
+				  ,@(aux (right tree))))))))
+      (aux tree))))
+
 (define tree-map
   (lambda (g tree)
     (letrec ((aux (lambda (tree)
@@ -203,5 +257,4 @@
 		    points))
 	   (let ((d (vector-length (caar points))))
 	     (build points 0 d (length points)))))))
-
 

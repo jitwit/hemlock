@@ -5,10 +5,12 @@
 	  lookup
 	  closed-nhood
 	  open-nhood
+	  nearest-neighbor
 	  insert
-	  map
-	  dist
-	  )
+	  tree-map
+	  tree->alist
+	  tree->keys
+	  dist)
   (import (chezscheme))
 
   (include "kd-tree.scm")
