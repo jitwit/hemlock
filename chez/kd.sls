@@ -2,7 +2,7 @@
   (export empty?
 	  leaf?
 	  ;; construct/modify
-	  kd-tree
+	  alist->tree
 	  insert
 	  delete
 	  tree-map

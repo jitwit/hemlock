@@ -39,7 +39,7 @@
   (lambda (tree)
     (cond ((%kd? tree) (%kd-size tree))
 	  ((leaf? tree) 1)
-	  (else 0 0))))
+	  (else 0))))
 
 (define join
   (lambda (root L R axis)
@@ -370,7 +370,7 @@
 				      (g (cdr tree))))))))
       (aux tree))))
 
-(define kd-tree ;; points assumed to be list of key val pairs
+(define alist->tree
   (lambda (points)
     (cond ((null? points) 'empty)
 	  (else
