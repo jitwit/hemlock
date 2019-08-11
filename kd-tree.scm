@@ -127,7 +127,40 @@
 			    ((leaf? tree)
 			     (let* ((r (car tree))
 				    (y (dist v r)))
-			       (when (< y x)
+			       (when (and (< y x) (not (= y 0)))
+				 (set! x y)
+				 (set! w r))))
+			    (else
+			     (let* ((r (root tree))
+				    (rk (vector-ref (car r) k))
+				    (vk (vector-ref v k))
+				    (dk (- vk rk))
+				    (k* (mod (1+ k) d))
+				    (L (left tree))
+				    (R (right tree)))
+			       (query r k*)
+			       (when (and (<= 0 dk) (<= dk x))
+				 (query R k*))
+			       (when (and (<= dk 0) (<= (- dk) x))
+				 (query L k*))))))))
+      (and (not (empty? tree))
+	   (begin
+	     (set! w (car (root tree)))
+	     (set! x (dist v w))
+	     (query tree 0)
+	     w)))))
+
+(define nearest-node
+  (lambda (tree v)
+    (letrec ((d (vector-length v))
+	     (w #f)
+	     (x #f)
+	     (query (lambda (tree k)
+		      (cond ((empty? tree) (void))
+			    ((leaf? tree)
+			     (let* ((r (car tree))
+				    (y (dist v r)))
+			       (when (and (< y x))
 				 (set! x y)
 				 (set! w r))))
 			    (else
@@ -171,6 +204,17 @@
 						 (query L k*))))))))))
       (query tree 0))))
 
+(define max-in-dimension
+  (lambda (tree dim)
+    (and (not (empty? tree))
+	 (letrec ((m (car (tree-root tree)))
+		  (d (vector-length m))
+		  (aux (lambda (tree k)
+			 #f
+			 )))
+	   (aux (left tree) 0)
+	   (aux (right tree) 0)))))
+
 (define insert
   (lambda (tree v x)
     (letrec ((d (vector-length v))
@@ -193,6 +237,45 @@
 					  'empty
 					  (cons v x))))))
 			  (else
+			   (let* ((r (car (root tree)))
+				  (vk (vector-ref v k))
+				  (rk (vector-ref r k))
+				  (k* (mod (1+ k) d)))
+			     (cond ((and (= vk rk) (equal? v r))
+				    (node k (cons v x)
+					  (left tree)
+					  (right tree)))
+				   ((or (< vk rk)
+					(and (= vk rk) (v:< v r)))
+				    (node k (root tree)
+					  (aux (left tree) k*)
+					  (right tree)))
+				   (else
+				    (node k (root tree)
+					  (left tree)
+					  (aux (right tree) k*))))))))))
+      (aux tree 0))))
+
+(define delete
+  (lambda (tree v)
+    (letrec ((d (vector-length v))
+	     (aux (lambda (tree k)
+		    (cond ((empty? tree) tree)
+			  ((leaf? tree)
+			   (or (and (equal? (car tree) v) empty)
+			       tree))
+			  (else
+			   ;; tricky case is if root is vertex to be deleted;
+			   ;; propsal: find nearest neighbor and delete that from subtree,
+			   ;; recombine with that at root?
+			   
+			   ;; unsatisfying proposal: if this is the case, just rebuild the tree
+			   ;; from this dimension ....
+
+			   ;; another one:
+			   ;; keep track of size?
+			   ;; delete min from right or max form left by a given dimension and
+			   ;; set that to root
 			   (let* ((r (car (root tree)))
 				  (vk (vector-ref v k))
 				  (rk (vector-ref r k))
