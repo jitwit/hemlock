@@ -24,6 +24,7 @@
 
 	  ;; misc 
 	  dist
+	  tree->sexp
 	  )
   (import (chezscheme))
 

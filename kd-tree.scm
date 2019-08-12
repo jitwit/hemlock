@@ -1,4 +1,10 @@
 ;; misc.
+(define *machine-epsilon*
+  (let loop ((epsilon 1.))
+    (if (= (+ 1. epsilon) 1.)
+	(* epsilon 2)
+	(loop (/ epsilon 2)))))
+
 (define square
   (lambda (x)
     (* x x)))
@@ -18,6 +24,17 @@
 		  (vi (vector-ref v i)))
 	      (or (and (= ui vi) (loop (1+ i)))
 		  (< ui vi))))))))
+
+(define v:=
+  (lambda (u v)
+    (let ((n (vector-length u)))
+      (let loop ((i 0))
+	(if (< i n)
+	    (let ((ui (vector-ref u i))
+		  (vi (vector-ref v i)))
+	      (and (< (abs (- ui vi))
+		      *machine-epsilon*)
+		   (loop (1+ i)))))))))
 
 (define-record-type %kd
   (fields root
@@ -41,12 +58,26 @@
 	  ((leaf? tree) 1)
 	  (else 0))))
 
+(define join*
+  (lambda (root L R axis)
+    (cond ((and (empty? L) (empty? R)) root)
+	  ((and (> (size R) 1) (empty? L))
+	   (build (cons root (tree->alist R))
+		  axis
+		  (vector-length (car root))
+		  (1+ (size R))))
+	  ((and (> (size L)) (empty? R))
+	   (build (cons root (tree->alist L))
+		  axis
+		  (vector-length (car root))
+		  (1+ (size L))))
+	  (else
+	   (make-%kd root L R axis (+ 1 (size L) (size R)))))))
+
 (define join
   (lambda (root L R axis)
-    (if (and (empty? L)
-	     (empty? R))
-	root
-	(make-%kd root L R axis (+ 1 (size L) (size R))))))
+    (cond ((and (empty? L) (empty? R)) root)
+	  (else (make-%kd root L R axis (+ 1 (size L) (size R)))))))
 
 (define root
   (lambda (tree)
@@ -133,6 +164,7 @@
 (define nearest-neighbor
   (lambda (tree v)
     (letrec ((d (vector-length v))
+	     (n #f)
 	     (w #f)
 	     (x +inf.0)
 	     (query (lambda (tree k)
@@ -154,15 +186,17 @@
 				   (y (dist v r)))
 			      (when (and (< y x) (not (= y 0)))
 				(set! x y)
+				(set! n tree)
 				(set! w r))))))))
       (and (not (empty? tree))
 	   (begin
 	     (query tree 0)
-	     w)))))
+	     n)))))
 
 (define nearest-node
   (lambda (tree v)
     (letrec ((d (vector-length v))
+	     (n #f)
 	     (w #f)
 	     (x +inf.0)
 	     (query (lambda (tree k)
@@ -184,6 +218,7 @@
 				   (y (dist v r)))
 			      (when (< y x)
 				(set! x y)
+				(set! n tree)
 				(set! w r))))))))
       (and (not (empty? tree))
 	   (begin
@@ -204,10 +239,10 @@
 				      (R (%kd-R tree)))
 				 (cond ((> vk rk) (query R k*))
 				       ((< vk rk) (query L k*))
-				       (else (or (and (equal? (car r) v) r)
+				       (else (or (and (v:= (car r) v) r)
 						 (query R k*)
 						 (query L k*)))))
-			       (and (equal? (car tree) v)
+			       (and (v:= (car tree) v)
 				    tree))))))
       (query tree 0))))
 
@@ -284,7 +319,7 @@
 				  (k* (mod (1+ k) d))
 				  (R (%kd-R tree))
 				  (L (%kd-L tree)))
-			     (cond ((and (= vk rk) (equal? v r))
+			     (cond ((and (= vk rk) (v:= v r))
 				    (join (cons v x) L R k))
 				   ((or (< vk rk)
 					(and (= vk rk) (v:< v r)))
@@ -296,7 +331,7 @@
 				  (rk (vector-ref r k))
 				  (k* (mod (1+ k) d))
 				  (t* (cons v x)))
-			     (cond ((and (= vk rk) (equal? v r)) t*)
+			     (cond ((and (= vk rk) (v:= v r)) t*)
 				   ((< vk rk) (join tree t* 'empty k))
 				   (else (join tree 'empty t* k)))))))))
       (aux tree 0))))
@@ -304,12 +339,12 @@
 (define delete
   (lambda (tree v)
     (letrec ((d (vector-length v))
-	     (aux-leaf (lambda (leaf)
+	     (aux-leaf (lambda (leaf v)
 			 (if (or (empty? leaf)
-				 (equal? v (car leaf)))
+				 (v:= v (car leaf)))
 			     'empty
 			     leaf)))
-	     (aux (lambda (tree k)
+	     (aux (lambda (tree v k)
 		    (if (%kd? tree)
 			(let* ((rt (%kd-root tree))
 			       (r (car rt))
@@ -319,18 +354,18 @@
 			       (L (%kd-L tree))
 			       (R (%kd-R tree)))
 			  (cond ((< vk rk)
-				 (join rt (aux L k*) R k))
+				 (join rt (aux L v k*) R k))
 				((> vk rk)
-				 (join rt L (aux R k*) k))
-				((equal? r v)
+				 (join rt L (aux R v k*) k))
+				((v:= r v)
 				 (if (< (size L) (size R))
 				     (let ((v* (min-in-dimension R k d)))
-				       (join v* L (delete R (car v*)) k))
+				       (join v* L (aux R (car v*) k*) k))
 				     (let ((v* (max-in-dimension L k d)))
-				       (join v* (delete L (car v*)) R k))))
-				(else (join rt (aux L k*) (aux R k*) k))))
-			(aux-leaf tree)))))
-      (aux tree 0))))
+				       (join v* (aux L (car v*) k*) R k))))
+				(else (join rt (aux L v k*) (aux R v k*) k))))
+			(aux-leaf tree v)))))
+      (aux tree v 0))))
 
 (define tree->alist
   (lambda (tree)
@@ -369,6 +404,15 @@
 			  (else (cons (car tree)
 				      (g (cdr tree))))))))
       (aux tree))))
+
+(define tree->sexp
+  (lambda (tree)
+    (cond ((%kd? tree)
+	   `(,(%kd-root tree)
+	     ,(tree->sexp (%kd-L tree))
+	     ,(tree->sexp (%kd-R tree))))
+	  ((empty? tree) 'leaf)
+	  (else tree))))
 
 (define alist->tree
   (lambda (points)
