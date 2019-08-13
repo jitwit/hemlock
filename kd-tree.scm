@@ -1,4 +1,4 @@
-;; misc.
+;; misc + vector stuff
 (define *machine-epsilon*
   (let loop ((epsilon 1.))
     (if (= (+ 1. epsilon) 1.)
@@ -36,12 +36,63 @@
 		      *machine-epsilon*)
 		   (loop (1+ i)))))))))
 
+(define v:any?
+  (lambda (v predicate)
+    (let ((n (vector-length v)))
+      (let loop ((i 0))
+	(and (< i n)
+	     (or (predicate (vector-ref v i))
+		 (loop (1+ i))))))))
+
+(define v:iany?
+  (lambda (v predicate)
+    (let ((n (vector-length v)))
+      (let loop ((i 0))
+	(and (< i n)
+	     (or (predicate i (vector-ref v i))
+		 (loop (1+ i))))))))
+
+(define v:all?
+  (lambda (v predicate)
+    (let ((n (vector-length v)))
+      (let loop ((i 0))
+	(or (= i n)
+	    (and (predicate (vector-ref v i))
+		 (loop (1+ i))))))))
+
+(define v:iall?
+  (lambda (v predicate)
+    (let ((n (vector-length v)))
+      (let loop ((i 0))
+	(or (= i n)
+	    (and (predicate i (vector-ref v i))
+		 (loop (1+ i))))))))
+
+(define v:fold
+  (lambda (v x0 f)
+    (let ((n (vector-length v)))
+      (let loop ((i 0) (x x0))
+	(if (< i n)
+	    (loop (1+ i) (f x (vector-ref v i)))
+	    x)))))
+
+(define v:ifold
+  (lambda (v x0 f)
+    (let ((n (vector-length v)))
+      (let loop ((i 0) (x x0))
+	(if (< i n)
+	    (loop (1+ i) (f i x (vector-ref v i)))
+	    x)))))
+
+;; datatype 
 (define-record-type %kd
   (fields root
 	  L
 	  R
 	  dim
-	  size))
+	  size
+	  min
+	  max))
 
 (define empty?
   (lambda (tree)
@@ -52,32 +103,52 @@
     (not (or (%kd? tree)
 	     (empty? tree)))))
 
+(define leaf-key
+  (lambda (leaf)
+    (car leaf)))
+
+(define leaf-value
+  (lambda (leaf)
+    (cdr leaf)))
+
 (define size
   (lambda (tree)
     (cond ((%kd? tree) (%kd-size tree))
 	  ((leaf? tree) 1)
 	  (else 0))))
 
-(define join*
-  (lambda (root L R axis)
-    (cond ((and (empty? L) (empty? R)) root)
-	  ((and (> (size R) 1) (empty? L))
-	   (build (cons root (tree->alist R))
-		  axis
-		  (vector-length (car root))
-		  (1+ (size R))))
-	  ((and (> (size L)) (empty? R))
-	   (build (cons root (tree->alist L))
-		  axis
-		  (vector-length (car root))
-		  (1+ (size L))))
-	  (else
-	   (make-%kd root L R axis (+ 1 (size L) (size R)))))))
+(define kd-min
+  (lambda (tree)
+    (if (%kd? tree)
+	(%kd-min tree)
+	(leaf-key tree))))
+
+(define kd-max
+  (lambda (tree)
+    (if (%kd? tree)
+	(%kd-max tree)
+	(leaf-key tree))))
+
+(define join-kd-min
+  (lambda (L R root)
+    (cond ((empty? L) (vector-map min (kd-min R) (leaf-key root)))
+	  ((empty? R) (vector-map min (kd-min L) (leaf-key root)))
+	  (else (vector-map min (kd-min L) (kd-min R) (leaf-key root))))))
+
+(define join-kd-max
+  (lambda (L R root)
+    (cond ((empty? L) (vector-map max (kd-max R) (leaf-key root)))
+	  ((empty? R) (vector-map max (kd-max L) (leaf-key root)))
+	  (else (vector-map max (kd-max L) (kd-max R) (leaf-key root))))))
 
 (define join
   (lambda (root L R axis)
     (cond ((and (empty? L) (empty? R)) root)
-	  (else (make-%kd root L R axis (+ 1 (size L) (size R)))))))
+	  (else (make-%kd root L R
+			  axis
+			  (+ 1 (size L) (size R))
+			  (join-kd-min L R root)
+			  (join-kd-max L R root))))))
 
 (define root
   (lambda (tree)
@@ -99,8 +170,8 @@
     (cond ((= n 0) 'empty)
 	  ((= n 1) (car points))
 	  (else (let* ((pts (sort (lambda (u v)
-				    (< (vector-ref (car u) k)
-				       (vector-ref (car v) k)))
+				    (< (vector-ref (leaf-key u) k)
+				       (vector-ref (leaf-key v) k)))
 				  points))
 		       (a (quotient (1- n) 2))
 		       (ls (list-head pts a))
@@ -155,7 +226,7 @@
 					     ,@(query r k*)
 					     ,@(query R k*))))))
 			    (else
-			     (if (< (dist v (car tree))
+			     (if (< (dist v (key-leaf tree))
 				    radius)
 				 `(,tree)
 				 '()))))))
@@ -165,7 +236,6 @@
   (lambda (tree v)
     (letrec ((d (vector-length v))
 	     (n #f)
-	     (w #f)
 	     (x +inf.0)
 	     (query (lambda (tree k)
 		      (unless (empty? tree)
@@ -186,12 +256,21 @@
 				   (y (dist v r)))
 			      (when (and (< y x) (not (= y 0)))
 				(set! x y)
-				(set! n tree)
-				(set! w r))))))))
+				(set! n tree))))))))
       (and (not (empty? tree))
 	   (begin
 	     (query tree 0)
 	     n)))))
+
+(define inside-region?
+  (lambda (tree v)
+    (and (not (empty? tree))
+	 (v:iall? (kd-min tree)
+		  (lambda (i tree-i)
+		    (>= (vector-ref v i) tree-i)))
+	 (v:iall? (kd-max tree)
+		  (lambda (i tree-i)
+		    (<= (vector-ref v i) tree-i))))))
 
 (define nearest-node
   (lambda (tree v)
@@ -229,7 +308,7 @@
   (lambda (tree v)
     (letrec ((d (vector-length v))
 	     (query (lambda (tree k)
-		      (and (not (empty? tree))
+		      (and (inside-region? tree v)
 			   (if (%kd? tree)
 			       (let* ((r (root tree))
 				      (rk (vector-ref (car r) k))
@@ -239,7 +318,7 @@
 				      (R (%kd-R tree)))
 				 (cond ((> vk rk) (query R k*))
 				       ((< vk rk) (query L k*))
-				       (else (or (and (v:= (car r) v) r)
+				       (else (or (and (v:= (leaf-key r) v) r)
 						 (query R k*)
 						 (query L k*)))))
 			       (and (v:= (car tree) v)
@@ -409,6 +488,12 @@
   (lambda (tree)
     (cond ((%kd? tree)
 	   `(,(%kd-root tree)
+	     size
+	     ,(%kd-size tree)
+	     min
+	     ,(%kd-min tree)
+	     max
+	     ,(%kd-max tree)
 	     ,(tree->sexp (%kd-L tree))
 	     ,(tree->sexp (%kd-R tree))))
 	  ((empty? tree) 'leaf)
