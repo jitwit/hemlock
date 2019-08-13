@@ -27,6 +27,9 @@
 	  tree->alist
 	  tree->keys
 	  tree->items
+	  leaf-key
+	  leaf-value
+	  make-leaf
 
 	  ;; misc 
 	  tree->sexp
