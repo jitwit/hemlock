@@ -27,6 +27,7 @@
 	  tree->alist
 	  tree->keys
 	  tree->items
+	  root
 	  leaf-key
 	  leaf-value
 	  make-leaf
