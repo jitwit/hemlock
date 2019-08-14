@@ -46,6 +46,9 @@
 	  v:>
 	  v:dist
 	  v:lp
+	  v:l1
+	  v:l2
+	  v:l-inf
 	  )
   (import (chezscheme))
 

@@ -102,7 +102,7 @@
 			k))))))
 
 (define closed-nhood
-  (lambda (tree v radius)
+  (lambda (tree v radius metric)
     (letrec ((d (vector-length v))
 	     (query (lambda (tree k)
 		      (cond ((empty? tree) '())
@@ -120,14 +120,14 @@
 					     ,@(query r k*)
 					     ,@(query R k*))))))
 			    (else
-			     (if (<= (v:dist v (car tree))
+			     (if (<= (metric v (car tree))
 				     radius)
 				 `(,tree)
 				 '()))))))
       (query tree 0))))
 
 (define open-nhood
-  (lambda (tree v radius)
+  (lambda (tree v radius metric)
     (letrec ((d (vector-length v))
 	     (query (lambda (tree k)
 		      (cond ((empty? tree) '())
@@ -145,7 +145,7 @@
 					     ,@(query r k*)
 					     ,@(query R k*))))))
 			    (else
-			     (if (< (v:dist v (leaf-key tree))
+			     (if (< (metric v (leaf-key tree))
 				    radius)
 				 `(,tree)
 				 '()))))))
@@ -179,10 +179,8 @@
 			      (when (and (< y x) (not (= y 0)))
 				(set! x y)
 				(set! n tree))))))))
-      (and (not (empty? tree))
-	   (begin
-	     (query tree 0)
-	     n)))))
+      (query tree 0)
+      n)))
 
 (define inside-region?
   (lambda (tree v)
@@ -313,7 +311,7 @@
 		    (cond ((empty? tree) (make-leaf v x))
 			  ((%kd? tree)
 			   (let* ((rt (%kd-root tree))
-				  (r (car rt))
+				  (r (leaf-key rt))
 				  (vk (vector-ref v k))
 				  (rk (vector-ref r k))
 				  (k* (mod (1+ k) d))
@@ -326,11 +324,11 @@
 				    (join rt (aux L k*) R k))
 				   (else (join rt L (aux R k*) k)))))
 			  (else
-			   (let* ((r (car tree))
+			   (let* ((r (leaf-key tree))
 				  (vk (vector-ref v k))
 				  (rk (vector-ref r k))
 				  (k* (mod (1+ k) d))
-				  (t* (cons v x)))
+				  (t* (make-leaf v x)))
 			     (cond ((and (= vk rk) (v:= v r)) t*)
 				   ((< vk rk) (join tree t* 'empty k))
 				   (else (join tree 'empty t* k)))))))))
