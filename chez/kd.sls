@@ -22,6 +22,8 @@
 	  max-in-dimension
 	  dimension
 	  bounding-box
+	  right
+	  left
 
 	  ;; destruct
 	  tree->alist

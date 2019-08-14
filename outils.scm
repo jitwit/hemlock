@@ -21,8 +21,9 @@
 
 (define v:l2
   (lambda (u v)
-    (v:dist u v 0 (lambda (d ui vi)
-		    (+ d (abs (- ui vi)))))))
+    (sqrt
+     (v:fold2 u v 0 (lambda (d ui vi)
+		      (+ d (square (- ui vi))))))))
 
 (define v:l-inf
   (lambda (u v)
