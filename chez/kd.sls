@@ -8,6 +8,7 @@
 	  ;; construct/modify
 	  alist->tree
 	  insert
+	  insert-with
 	  delete
 	  tree-map
 	  

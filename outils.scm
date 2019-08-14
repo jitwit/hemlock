@@ -122,3 +122,18 @@
 	(if (< i n)
 	    (loop (1+ i) (f i x (vector-ref v i)))
 	    x)))))
+
+(define merge-by-distance
+  (lambda (us vs k)
+    (letrec ((take (lambda (k xs)
+		     (if (or (zero? k) (null? xs))
+			 '()
+			 (cons (cdar xs) (take (1- k) (cdr xs))))))
+	     (aux (lambda (us vs k)
+		    (cond ((zero? k) '())
+			  ((null? us) (take k vs))
+			  ((null? vs) (take k us))
+			  ((< (caar us) (caar vs))
+			   (cons (cdar us) (aux (cdr us) vs (1- k))))
+			  (else (cons (cdar vs) (aux us (cdr vs) (1- k))))))))
+      (aux us vs k))))
