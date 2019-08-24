@@ -3,7 +3,6 @@
 
 (library (chez kd)
   (export empty?
-	  leaf?
 	  
 	  ;; construct/modify
 	  alist->tree
@@ -52,6 +51,7 @@
 	  v:l1
 	  v:l2
 	  v:l-inf
+	  inside-region?
 	  )
   (import (chezscheme))
 

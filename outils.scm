@@ -65,7 +65,8 @@
 	    (let ((ui (vector-ref u i))
 		  (vi (vector-ref v i)))
 	      (and (< (abs (- ui vi)) *machine-epsilon*)
-		   (loop (1+ i)))))))))
+		   (loop (1+ i))))
+	    #t)))))
 
 (define v:any?
   (lambda (v predicate)
