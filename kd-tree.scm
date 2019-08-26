@@ -152,7 +152,7 @@
       (query tree 0))))
 
 (define nearest-neighbor
-  (lambda (tree v)
+  (lambda (tree v metric)
     (letrec ((d (vector-length v))
 	     (n #f)
 	     (x +inf.0)
@@ -175,7 +175,7 @@
 				     (query L k*)
 				     (query R k*))))
 			    (let* ((r (leaf-key tree))
-				   (y (v:dist v r)))
+				   (y (metric v r)))
 			      (when (and (< y x) (not (= y 0)))
 				(set! x y)
 				(set! n tree))))))))
@@ -199,7 +199,7 @@
 	       (kd-max tree)))))
 
 (define nearest-node
-  (lambda (tree v)
+  (lambda (tree v metric)
     (letrec ((d (vector-length v))
 	     (n #f)
 	     (x +inf.0)
@@ -207,7 +207,7 @@
 		      (unless (empty? tree)
 			(if (%kd? tree)
 			    (let* ((r (root tree))
-				   (rk (vector-ref (car r) k))
+				   (rk (vector-ref (leaf-key r) k))
 				   (vk (vector-ref v k))
 				   (dk (- vk rk))
 				   (k* (mod (1+ k) d))
@@ -221,15 +221,13 @@
 				    (else
 				     (query L k*)
 				     (query R k*))))
-			    (let* ((r (car tree))
-				   (y (v:dist v r)))
+			    (let* ((r (leaf-key tree))
+				   (y (metric v r)))
 			      (when (< y x)
 				(set! x y)
 				(set! n tree))))))))
-      (and (not (empty? tree))
-	   (begin
-	     (query tree 0)
-	     n)))))
+      (query tree 0)
+      n)))
 
 (define lookup
   (lambda (tree v)

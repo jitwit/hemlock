@@ -138,3 +138,15 @@
 			   (cons (cdar us) (aux (cdr us) vs (1- k))))
 			  (else (cons (cdar vs) (aux us (cdr vs) (1- k))))))))
       (aux us vs k))))
+
+(define _x
+  (lambda (v)
+    (vector-ref v 0)))
+
+(define _y
+  (lambda (v)
+    (vector-ref v 1)))
+
+(define _z
+  (lambda (v)
+    (vector-ref v 2)))

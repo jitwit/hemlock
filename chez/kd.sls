@@ -1,5 +1,4 @@
-(eval-when (compile)
-  (optimize-level 3))
+(eval-when (compile) (optimize-level 3))
 
 (library (chez kd)
   (export empty?
@@ -51,6 +50,9 @@
 	  v:l1
 	  v:l2
 	  v:l-inf
+	  _x
+	  _y
+	  _z
 	  inside-region?
 	  )
   (import (chezscheme))

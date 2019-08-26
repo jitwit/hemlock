@@ -39,6 +39,6 @@
 	  maximum
 	  tree-size
 	  view-tree)
-  (import (chezscheme))
+  (import (scheme))
 
   (include "patricia.scm"))
