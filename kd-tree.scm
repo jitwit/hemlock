@@ -5,9 +5,7 @@
 	  L
 	  R
 	  axis
-	  size
-	  min
-	  max))
+	  size))
 
 (define empty?
   (lambda (tree)
@@ -38,15 +36,43 @@
 
 (define kd-min
   (lambda (tree)
-    (if (%kd? tree)
-	(%kd-min tree)
-	(leaf-key tree))))
+    (let ((L (%kd-L tree))
+	  (R (%kd-R tree)))
+      (cond ((and (empty? L) (empty? R))
+	     (leaf-key (root tree)))
+	    ((empty? L)
+	     (vector-map min
+			 (leaf-key (root tree))
+			 (kd-min (%kd-R tree))))
+	    ((empty? R)
+	     (vector-map min
+			 (leaf-key (root tree))
+			 (kd-min (%kd-L tree))))
+	    (else
+	     (vector-map min
+			 (leaf-key (root tree))
+			 (kd-min (%kd-L tree))
+			 (kd-min (%kd-R tree))))))))
 
 (define kd-max
   (lambda (tree)
-    (if (%kd? tree)
-	(%kd-max tree)
-	(leaf-key tree))))
+    (let ((L (%kd-L tree))
+	  (R (%kd-R tree)))
+      (cond ((and (empty? L) (empty? R))
+	     (leaf-key (root tree)))
+	    ((empty? L)
+	     (vector-map max
+			 (leaf-key (root tree))
+			 (kd-max (%kd-R tree))))
+	    ((empty? R)
+	     (vector-map max
+			 (leaf-key (root tree))
+			 (kd-max (%kd-L tree))))
+	    (else
+	     (vector-map max
+			 (leaf-key (root tree))
+			 (kd-max (%kd-L tree))
+			 (kd-max (%kd-R tree))))))))
 
 (define join-kd-min
   (lambda (L R root)
@@ -65,9 +91,7 @@
     (cond ((and (empty? L) (empty? R)) root)
 	  (else (make-%kd root L R
 			  axis
-			  (+ 1 (size L) (size R))
-			  (join-kd-min L R root)
-			  (join-kd-max L R root))))))
+			  (+ 1 (size L) (size R)))))))
 
 (define root
   (lambda (tree)
@@ -249,8 +273,7 @@
 						 (query L k*)))))
 			       (and (v:= (leaf-key tree) v)
 				    tree))))))
-      (and (inside-region? tree v)
-	   (query tree 0)))))
+      (query tree 0))))
 
 (define dimension
   (lambda (tree)
@@ -437,9 +460,7 @@
 				     (aux (%kd-L tree))
 				     (aux (%kd-R tree))
 				     (%kd-axis tree)
-				     (%kd-size tree)
-				     (%kd-min tree)
-				     (%kd-max tree)))
+				     (%kd-size tree)))
 			  ((empty? tree) tree)
 			  (else (make-leaf (leaf-key tree)
 					   (g (leaf-value tree))))))))
@@ -451,10 +472,6 @@
 	   `(,(%kd-root tree)
 	     size
 	     ,(%kd-size tree)
-	     min
-	     ,(%kd-min tree)
-	     max
-	     ,(%kd-max tree)
 	     ,(tree->sexp (%kd-L tree))
 	     ,(tree->sexp (%kd-R tree))))
 	  ((empty? tree) 'leaf)

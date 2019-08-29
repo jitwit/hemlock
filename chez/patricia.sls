@@ -40,5 +40,5 @@
 	  tree-size
 	  view-tree)
   (import (scheme))
-
+  
   (include "patricia.scm"))
