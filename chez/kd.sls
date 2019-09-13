@@ -35,26 +35,7 @@
 
 	  ;; misc 
 	  tree->sexp
-	  v:fold
-	  v:fold2
-	  v:ifold
-	  v:any?
-	  v:iany?
-	  v:all?
-	  v:iall?
-	  v:=
-	  v:<
-	  v:>
-	  v:dist
-	  v:lp
-	  v:l1
-	  v:l2
-	  v:l-inf
-	  _x
-	  _y
-	  _z
-	  inside-region?
-	  )
+	  inside-region?)
   (import (chezscheme))
 
   (include "outils.scm")
