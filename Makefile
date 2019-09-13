@@ -15,6 +15,7 @@ build:
 	echo "(compile-library \"chez/kd.sls\"))" | ${CHEZ} -q
 	echo "(compile-library \"chez/patricia.sls\"))" | ${CHEZ} -q
 	echo "(compile-library \"chez/patricia-set.sls\"))" | ${CHEZ} -q
+	echo "(compile-library \"chez/batched-queue.sls\"))" | ${CHEZ} -q
 
 install:
 	find . -type f -regex ".*.so" -exec sh -c '${INSTALL} -t ${schemedir}/$$(dirname $$1) $$1' _ {} \;
