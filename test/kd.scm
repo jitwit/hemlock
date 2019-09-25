@@ -43,7 +43,7 @@
     (let loop ((tree (delete tree start)) (route (list start)))
       (if (empty? tree)
 	  route
-	  (let* ((node (leaf-key (nearest-neighbor tree (car route))))
+	  (let* ((node (leaf-key (nearest-neighbor tree (car route) v:l1)))
 		 (tree (delete tree node)))
 	    (unless (audit tree)
 	      (error 'deletion!

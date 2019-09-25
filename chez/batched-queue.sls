@@ -5,10 +5,11 @@
 	  empty?
 	  consq
 	  snocq
+          snocq-list
+          list->queue
+          queue->list
 	  headq
-	  tailq
-	  initq
-	  lastq)
+	  tailq)
   (import (scheme))
   
   (include "batched-queue.scm"))
