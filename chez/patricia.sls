@@ -21,6 +21,7 @@
 	  singleton
 	  tree->alist
 	  tree->keys
+	  descending-keys
 	  tree->items
 	  tree-ifilter
 	  tree-filter

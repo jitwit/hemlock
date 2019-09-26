@@ -352,6 +352,13 @@
 		      '()
 		      T)))
 
+(define descending-keys
+  (lambda (T)
+    (tree-ifold-left (lambda (keys k ignore)
+			(cons k keys))
+		      '()
+		      T)))
+
 (define tree->items
   (lambda (T)
     (tree-fold-right cons '() T)))

@@ -254,6 +254,11 @@
   (lambda (S)
     (set-fold-right cons '() S)))
 
+(define set->list-descending
+  (lambda (S)
+    (set-fold-left (lambda (xs x)
+		     (cons x xs)) '() S)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Maps, folds, and misc.                                                     ;;
 

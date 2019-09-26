@@ -17,6 +17,7 @@
 	  symmetric-difference
 	  singleton
 	  set->list
+	  set->list-descending
 	  set-filter
 	  set-fold-left
 	  set-fold-right
