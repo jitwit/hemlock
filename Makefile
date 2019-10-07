@@ -15,11 +15,11 @@ build:
 	${chez} --program compile-all.ss
 
 install:
-	find . -type f -regex ".*.so" -exec sh -c '${install} -t ${libs}/$$(dirname $$1) $$1' _ {} \;
+	find . -type f -regex ".*.so" -exec sh -c '${install} -t ${schemedir}/$$(dirname $$1) $$1' _ {} \;
 
 install-src:
-	find . -type f -regex ".*.sls" -exec sh -c '${install} -t ${libs}/$$(dirname $$1) $$1' _ {} \;
-	find . -type f -regex ".*.scm" -exec sh -c '${install} -t ${libs}/$$(dirname $$1) $$1' _ {} \;
+	find . -type f -regex ".*.sls" -exec sh -c '${install} -t ${schemedir}/$$(dirname $$1) $$1' _ {} \;
+	find . -type f -regex ".*.scm" -exec sh -c '${install} -t ${schemedir}/$$(dirname $$1) $$1' _ {} \;
 
 clean:
 	find . -name "*.so" -exec rm {} \;
