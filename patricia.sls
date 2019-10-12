@@ -1,6 +1,6 @@
 (eval-when (compile) (optimize-level 3))
 
-(library (chez patricia)
+(library (patricia)
   (export empty?
 	  empty-tree
 	  patricia-tree?
