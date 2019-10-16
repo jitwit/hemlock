@@ -3,23 +3,20 @@
   (lambda (k b)
     (logbit0 b (logor k (1- (ash 1 b))))))
 
-(define-syntax match-prefix
-  (syntax-rules ()
-    ((_ k p b)
-     (= (logbit0 b (logor k (1- (ash 1 b))))
-	p))
-    ((_ k T)
-     (let ((b (patricia-b T))
-	   (p (patricia-p T)))
-       (= (logbit0 b (logor k (1- (ash 1 b))))
-	  p)))))
+(define match-prefix
+  (case-lambda
+    ((k p b) (= (logbit0 b (logor k (1- (ash 1 b))))
+                p))
+    ((k T) (let ((b (patricia-b T))
+                 (p (patricia-p T)))
+             (= (logbit0 b (logor k (1- (ash 1 b))))
+                p)))))
 
 (define branch-bit-set? logbit?)
 
 (define branching-bit
   (lambda (p1 p2)
     (1- (bitwise-length (logxor p1 p2)))))
-
 
 ;; p for prefix, b for branching bit, capital letter to indicate sub-structure
 (define-record-type patricia
@@ -63,11 +60,10 @@
 ;; called when prefixes disagree
 (define join
   (lambda (p1 T1 p2 T2)
-    (let* ((b (branching-bit p1 p2))
-	   (new-prefix (mask p1 b)))
+    (let ((b (branching-bit p1 p2)))
       (if (branch-bit-set? b p1)
-	  (make-patricia new-prefix b T2 T1)
-	  (make-patricia new-prefix b T1 T2)))))
+	  (make-patricia (mask p1 b) b T2 T1)
+	  (make-patricia (mask p1 b) b T1 T2)))))
 
 ;; called when prefixes agree
 (define make-tree

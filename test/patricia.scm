@@ -1,6 +1,7 @@
 ;; ad hoc tests/benchmarks
-(import (srfi :1)
-	(chez patricia))
+(import (srfi :1))
+
+(include "patricia.scm")
 
 ;; ratio of lookups/insertions. also for benching
 (define (random-tree lim trials ratio . verbose?)

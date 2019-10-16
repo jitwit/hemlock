@@ -1,6 +1,6 @@
 (eval-when (compile) (optimize-level 3))
 
-(library (chez patricia-set)
+(library (patricia-set)
   (export empty?
 	  empty-set
 	  patricia-set?
@@ -31,4 +31,5 @@
   
   (include "patricia-set.scm")
   (define patricia-set? patricia-tree?)
+  
   )
