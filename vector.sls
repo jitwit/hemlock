@@ -1,6 +1,6 @@
 (eval-when (compile) (optimize-level 3))
 
-(library (chez vector)
+(library (vector)
   (export v:fold
 	  v:fold2
 	  v:ifold
@@ -21,4 +21,4 @@
 	  _z)
   (import (chezscheme))
   
-  (include "outils.scm"))
+  (include "code/outils.scm"))

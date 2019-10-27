@@ -1,6 +1,6 @@
 (eval-when (compile) (optimize-level 3))
 
-(library (chez kd)
+(library (kd-tree)
   (export empty?
 	  
 	  ;; construct/modify
@@ -38,8 +38,8 @@
 	  inside-region?)
   (import (chezscheme))
 
-  (include "outils.scm")
-  (include "kd-tree.scm")
+  (include "code/outils.scm")
+  (include "code/kd-tree.scm")
 
   )
 

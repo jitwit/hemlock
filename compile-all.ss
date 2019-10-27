@@ -3,9 +3,9 @@
 (import (chezscheme))
 
 (for-each compile-library
-          '("./chez/kd.sls"
-            "./chez/patricia.sls"
+          '("./kd-tree.sls"
             "./patricia.sls"
             "./patricia-set.sls"
-            "./chez/batched-queue.sls"
-            "./chez/vector.sls"))
+            "./batched-queue.sls"
+            "./vector.sls"
+            "./union-find.sls"))

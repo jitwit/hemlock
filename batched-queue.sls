@@ -1,6 +1,6 @@
 (eval-when (compile) (optimize-level 3))
 
-(library (chez batched-queue)
+(library (batched-queue)
   (export empty
 	  empty?
 	  consq
@@ -12,4 +12,4 @@
 	  tailq)
   (import (scheme))
   
-  (include "batched-queue.scm"))
+  (include "code/batched-queue.scm"))

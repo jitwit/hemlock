@@ -42,4 +42,4 @@
 	  view-tree)
   (import (chezscheme))
   
-  (include "patricia.scm"))
+  (include "code/patricia.scm"))

@@ -29,7 +29,7 @@
 	  view-set)
   (import (chezscheme))
   
-  (include "patricia-set.scm")
+  (include "code/patricia-set.scm")
   (define patricia-set? patricia-tree?)
   
   )
