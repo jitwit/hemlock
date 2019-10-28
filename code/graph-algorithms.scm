@@ -1,6 +1,4 @@
 
-(import (prefix (chez batched-queue) q:))
-
 (define dfs
   (lambda (v G)
     (if (not (has-vertex? G v))

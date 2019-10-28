@@ -8,4 +8,5 @@
             "./patricia-set.sls"
             "./batched-queue.sls"
             "./vector.sls"
-            "./union-find.sls"))
+            "./union-find.sls"
+            "./alga.sls"))

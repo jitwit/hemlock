@@ -1,11 +1,5 @@
 ;;;; Algebraic Graphs in Scheme
 
-;;; AdjacencyIntMap 
-
-(import (prefix (chez patricia) t:)
-	(prefix (chez patricia-set) s:)
-	(chezscheme))
-
 ;;; Means of combination
 
 (define empty-graph

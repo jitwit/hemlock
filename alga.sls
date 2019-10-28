@@ -1,6 +1,6 @@
-(eval-when (compile) (optimize-level 3))
+;; (eval-when (compile) (optimize-level 3))
 
-(library (chez alga)
+(library (alga)
   (export dfs
           bfs
           topological-sort
@@ -40,9 +40,9 @@
           
           )
   (import (chezscheme)
-          (prefix (chez batched-queue) q:)
-          (prefix (chez patricia) t:)
-          (prefix (chez patricia-set) s:))
-  (include "graph.scm")
-  (include "graph-algorithms.scm")
+          (prefix (batched-queue) q:)
+          (prefix (patricia) t:)
+          (prefix (patricia-set) s:))
+  (include "code/graph.scm")
+  (include "code/graph-algorithms.scm")
   )
