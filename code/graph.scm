@@ -102,6 +102,15 @@
 		empty-graph
 		es)))
 
+(define path
+  (lambda (vs)
+    (if (null? vs)
+        empty-graph
+        (let loop ((vs vs) (G (list empty-graph)))
+          (if (pair? (cdr vs))
+              (loop (cdr vs) (cons (edge (car vs) (cadr vs)) G))
+              (apply overlays G))))))
+
 (define circuit
   (lambda (vs)
     (if (null? vs)
@@ -162,6 +171,14 @@
   (lambda (v G)
     (s:set->list-descending (post-set v G))))
 
+(define incoming-edges
+  (lambda (v G)
+    (s:set->list (pre-set v G))))
+
+(define incoming-edges-descending
+  (lambda (v G)
+    (s:set->list-descending (pre-set v G))))
+
 (define has-vertex?
   (lambda (G v)
     (and (t:lookup-with-default v #f G)
@@ -177,5 +194,4 @@
 			 (+ (s:set-size alist) E))
 		       0
 		       G)))
-
 

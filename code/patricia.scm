@@ -556,6 +556,3 @@
 	  ((patricia-leaf? T) (cons (patricia-leaf-key T)
 				    (patricia-leaf-item T)))
 	  (else '()))))
-
-
-

@@ -2,11 +2,11 @@
 (define-record-type queue
   (fields hd tl)
   (protocol
-      (lambda (new)
-        (lambda (hd tl)
-          (if (null? hd)
-              (new (reverse tl) '())
-              (new hd tl))))))
+   (lambda (new)
+     (lambda (hd tl)
+       (if (null? hd)
+           (new (reverse tl) '())
+           (new hd tl))))))
 
 (define empty
   (make-queue '() '()))
