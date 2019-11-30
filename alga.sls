@@ -4,7 +4,10 @@
   (export dfs
           bfs
           topological-sort
+          acyclic?
+          dag?
           scc
+          scc-count
           
           ;; construction
           empty-graph

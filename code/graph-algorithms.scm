@@ -41,40 +41,50 @@
   (lambda (G)
     (call/cc
      (lambda (cyclic)
-       (letrec ((seen (make-hash-table))
-                (tree (make-hash-table))
-                (ordering '())
-                (find-cycle (lambda (head cycle)
-                              (if (eq? head (car cycle))
-                                  cycle
-                                  (find-cycle head
-                                              (cons (hashtable-ref tree
-                                                                   (car cycle)
-                                                                   #f)
-                                                    cycle)))))
-                (enter (lambda (x y)
-                         (hashtable-set! seen y 'entered)
-                         (hashtable-set! tree y x)))
-                (exit (lambda (y)
-                        (hashtable-set! seen y 'exited)
-                        (set! ordering (cons y ordering))))
-                (dfs (lambda (x)
-                       (for-each (lambda (y)
-                                   (let ((y-state (hashtable-ref seen y #f)))
-                                     (cond ((eq? y-state 'entered)
-                                            (cyclic (cons 'cyclic (find-cycle y (list x)))))
-                                           ((eq? y-state 'exited))
-                                           (else
-                                            (enter x y)
-                                            (dfs y)
-                                            (exit y)))))
-                                 (adjacent-descending x G)))))
+       (let ((seen (make-hash-table))
+             (tree (make-hash-table))
+             (ordering '()))
+         (define (dfs-state v)
+           (hashtable-ref seen v #f))
+         (define (find-cycle head cycle)
+           (if (eq? head (car cycle))
+               cycle
+               (find-cycle head
+                           (cons (hashtable-ref tree
+                                                (car cycle)
+                                                #f)
+                                 cycle))))
+         (define (enter x y)
+           (hashtable-set! seen y 'entered)
+           (hashtable-set! tree y x))
+         (define (exit y)
+           (hashtable-set! seen y 'exited)
+           (push! y ordering))
+         (define (dfs x)
+           (for-each (lambda (y)
+                       (let ((y-state (dfs-state y)))
+                         (cond ((eq? y-state 'entered)
+                                (cyclic (cons 'cyclic (find-cycle y (list x)))))
+                               ((eq? y-state 'exited))
+                               (else
+                                (enter x y)
+                                (dfs y)
+                                (exit y)))))
+                     (adjacent-descending x G)))
          (for-each (lambda (v)
-                     (unless (hashtable-ref seen v #f)
+                     (unless (dfs-state v)
                        (dfs v)
                        (exit v)))
                    (vertex-list-descending G))
          (cons 'dag ordering))))))
+
+(define acyclic?
+  (lambda (G)
+    (eq? 'dag (car (topological-sort G)))))
+
+(define dag?
+  (lambda (G)
+    (acyclic? G)))
 
 (define scc
   (lambda (G)
@@ -125,4 +135,8 @@
                  (unless (preorder-id v)
                    (dfs v)))
                (vertex-list G))
-      (hashtable-cells components))))
+      components)))
+
+(define scc-count
+  (lambda (G)
+    (fx1+ (fold-left fxmax -1 (vector->list (hashtable-values (scc G)))))))
