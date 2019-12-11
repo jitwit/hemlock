@@ -9,4 +9,5 @@
             "./batched-queue.sls"
             "./vector.sls"
             "./union-find.sls"
-            "./alga.sls"))
+            "./alga.sls"
+            "./pairing-heap.sls"))
