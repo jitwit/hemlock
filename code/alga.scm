@@ -25,12 +25,18 @@
   (lambda (G H)
     (t:merge-with s:union G H)))
 
+(define %overlays
+  (case-lambda
+    ((G H . gs)
+     (overlay (overlay G H) (apply %overlays gs)))
+    ((G H)
+     (overlay G H))
+    ((G) G)
+    (() empty-graph)))
+
 (define overlays
   (lambda (graphs)
-    (match graphs
-      ((G H . gs) (overlay (overlay G H) (overlays gs)))
-      ((G) G)
-      (() empty-graph))))
+    (apply %overlays graphs)))
 
 (define overlays*
   (lambda graphs

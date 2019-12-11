@@ -48,7 +48,6 @@
           
           )
   (import (chezscheme)
-          (matchable)
           (prefix (batched-queue) q:)
           (prefix (patricia) t:)
           (prefix (patricia-set) s:))
