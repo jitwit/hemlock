@@ -3,6 +3,8 @@
 
 (include "code/patricia.scm")
 
+(print-gensym #f)
+
 ;; ratio of lookups/insertions. also for benching
 (define (random-tree lim trials ratio . verbose?)
   (let loop ((n 0) (x (singleton 1 0)))
@@ -48,7 +50,7 @@
 (define (time-patricia-merge)
   (collect)
   (time
-   (tree-size (merge-with + tree-1 tree-2))))
+   (tree-size (union-with + tree-1 tree-2))))
 (define (time-list-merge)
   (collect)
   (time
@@ -63,7 +65,7 @@
 (define (basic-tests)
   (let ((s1 (tree-size tree-1))
 	(s2 (tree-size tree-2))
-	(s-union (tree-size (merge-with + tree-1 tree-2)))
+	(s-union (tree-size (union-with + tree-1 tree-2)))
 	(s-intersection (tree-size (intersect-with + tree-1 tree-2)))
 	(s-symmetric-diff (tree-size (symmetric-difference tree-1 tree-2)))
 	(s-diff (tree-size (difference tree-1 tree-2))))

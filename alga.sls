@@ -16,6 +16,7 @@
           overlay
           connect
           overlays
+          overlays*
 
           ;; manipulation
           insert-vertex
@@ -47,6 +48,7 @@
           
           )
   (import (chezscheme)
+          (matchable)
           (prefix (batched-queue) q:)
           (prefix (patricia) t:)
           (prefix (patricia-set) s:))
@@ -68,6 +70,6 @@
          (set! X (cdr X))
          x))))
   
-  (include "code/graph.scm")
+  (include "code/alga.scm")
   (include "code/graph-algorithms.scm")
   )

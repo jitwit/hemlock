@@ -2,7 +2,7 @@
 
 (library (patricia)
   (export empty?
-	  empty-tree
+	  empty
 	  patricia-tree?
 	  tree-equal?
 	  empty?

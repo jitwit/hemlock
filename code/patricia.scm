@@ -22,22 +22,8 @@
 (define-record-type patricia
   (fields p b L R))
 
-(define make-patricia-leaf
-  (lambda (key item)
-    (cons key item)))
-
-(define patricia-leaf?
-  (lambda (l)
-    (or (integer? l)
-	(pair? l))))
-
-(define patricia-leaf-key
-  (lambda (l)
-    (car l)))
-
-(define patricia-leaf-item
-  (lambda (l)
-    (cdr l)))
+(define-record-type patricia-leaf
+  (fields key item))
 
 (define tree-equal?
   (lambda (S T)
@@ -51,11 +37,11 @@
 		(= (patricia-leaf-item S) (patricia-leaf-item T))))
 	  (else (and (empty? S) (empty? T))))))
 
-(define empty-tree 'empty-tree)
+(define empty 'empty)
 
 (define empty?
-  (lambda (Tree)
-    (eq? Tree empty-tree)))
+  (lambda (tree)
+    (eq? tree empty)))
 
 ;; called when prefixes disagree
 (define join
@@ -195,7 +181,7 @@
 		   T)))
 	    ((patricia-leaf? T)
 	     (if (= key (patricia-leaf-key T))
-		 empty-tree
+		 empty
 		 T))
 	    (else T)))
     (aux T)))
@@ -211,14 +197,14 @@
 	       (if (pair? T-k)
 		   (make-patricia-leaf S-k (combine (patricia-leaf-item S)
 						    (cdr T-k)))
-		   empty-tree)))
+		   empty)))
 	    ((patricia-leaf? T)
 	     (let* ((T-k (patricia-leaf-key T))
 		    (S-k (lookup T-k S)))
 	       (if (pair? S-k)
 		   (make-patricia-leaf T-k (combine (cdr S-k)
 						    (patricia-leaf-item T)))
-		   empty-tree)))
+		   empty)))
 	    (else
 	     (let ((p (patricia-p S))
 		   (b (patricia-b S))
@@ -238,7 +224,7 @@
 		      (if (branch-bit-set? b q)
 			  (aux Sr T)
 			  (aux Sl T)))
-		     (else empty-tree))))))
+		     (else empty))))))
     (aux S T)))
 
 (define difference
@@ -250,7 +236,7 @@
 	     (let* ((S-k (patricia-leaf-key S))
 		    (T-k (lookup S-k T)))
 	       (if (pair? T-k)
-		   empty-tree
+		   empty
 		   S)))
 	    ((patricia-leaf? T) (delete (patricia-leaf-key T) S))
 	    (else
@@ -284,23 +270,33 @@
 		(difference S T)
 		(difference T S))))
 
-(define (union-with combine . trees)
-  (fold-right (lambda (X Y)
-		(merge-with combine X Y))
-	      empty-tree
-	      trees))
+(define %union-with
+  (case-lambda
+    ((combine) empty)
+    ((combine tree) tree)
+    ((combine tree1 tree2 . trees)
+     (merge-with combine
+                 (merge-with combine tree1 tree2)
+                 (apply %union-with combine trees)))))
 
-(define (intersection-with combine . trees)
-  (if (null? trees)
-      empty-tree
-      (fold-right (lambda (X Y)
-		    (intersect-with combine X Y))
-		  (car trees)
-		  (cdr trees))))
+(define (union-with combine . trees)
+  (apply %union-with combine trees))
+
+(define %intersection-with
+  (case-lambda
+    ((combine) empty)
+    ((combine tree) tree)
+    ((combine tree1 tree2 . trees)
+     (intersect-with combine
+                     (intersect-with combine tree1 tree2)
+                     (apply %intersection-with combine trees)))))
+
+(define (intersection-with combine trees)
+  (apply %intersection-with combine trees))
 
 (define singleton
   (lambda (key item)
-    (insert key item empty-tree)))
+    (insert key item empty)))
 
 (define tree-ifilter
   (lambda (predicate T)
@@ -314,8 +310,8 @@
 	     (if (predicate (patricia-leaf-key T)
 			    (patricia-leaf-item T))
 		 T
-		 empty-tree))
-	    (else empty-tree)))
+		 empty))
+	    (else empty)))
     (aux T)))
 
 (define tree-filter
@@ -329,8 +325,8 @@
 	    ((patricia-leaf? T)
 	     (if (predicate (patricia-leaf-item T))
 		 T
-		 empty-tree))
-	    (else empty-tree)))
+		 empty))
+	    (else empty)))
     (aux T)))
 
 (define tree->alist
@@ -492,7 +488,7 @@
 			       (aux (patricia-L T))))
 			  ((patricia-leaf? T)
 			   (if (< cutoff (patricia-leaf-key T))
-			       empty-tree
+			       empty
 			       T))
 			  (else T)))))
       (aux T))))
@@ -510,7 +506,7 @@
 			  ((patricia-leaf? T)
 			   (if (< cutoff (patricia-leaf-key T))
 			       T
-			       empty-tree))
+			       empty))
 			  (else T)))))
       (aux T))))
 
@@ -523,7 +519,7 @@
 		(tree->alist
 		 (fold-right (lambda (x T)
 			       (insert-with + x 1 T))
-			     empty-tree
+			     empty
 			     X)))))
 
 (define tree-size

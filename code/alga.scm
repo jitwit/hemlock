@@ -1,9 +1,6 @@
-;;;; (Weighted) Algebraic Graphs in Scheme
+;;;; Algebraic Graphs in Scheme
 
-(define join-with
-  (lambda (combine)
-    (lambda (G H)
-      (t:merge-with combine G H))))
+;;; Means of combination
 
 (define empty-graph
   t:empty)
@@ -16,21 +13,13 @@
 (define vertex
   (lambda (v)
     (check-vertex v)
-    (t:singleton v t:empty)))
-
-(define %edge
-  (lambda (u v w)
-    (check-vertex u)
-    (check-vertex v)
-    (t:insert-with (join-with +) v t:empty (t:singleton u (t:singleton v w)))))
+    (t:singleton v s:empty-set)))
 
 (define edge
-  (case-lambda
-    ((u v)))
   (lambda (u v)
     (check-vertex u)
     (check-vertex v)
-    ))
+    (t:insert-with s:union v s:empty-set (t:singleton u (s:singleton v)))))
 
 (define overlay
   (lambda (G H)
