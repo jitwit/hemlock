@@ -1,22 +1,23 @@
+#!r6rs
 
 (define mask
   (lambda (k b)
-    (logbit0 b (logor k (1- (ash 1 b))))))
+    (logbit0 b (logor k (- (ash 1 b) 1)))))
 
 (define match-prefix
   (case-lambda
-    ((k p b) (= (logbit0 b (logor k (1- (ash 1 b))))
+    ((k p b) (= (logbit0 b (logor k (- (ash 1 b) 1)))
                 p))
     ((k T) (let ((b (patricia-b T))
                  (p (patricia-p T)))
-             (= (logbit0 b (logor k (1- (ash 1 b))))
+             (= (logbit0 b (logor k (- (ash 1 b) 1)))
                 p)))))
 
 (define branch-bit-set? logbit?)
 
 (define branching-bit
   (lambda (p1 p2)
-    (1- (bitwise-length (logxor p1 p2)))))
+    (- (bitwise-length (logxor p1 p2)) 1)))
 
 ;; p for prefix, b for branching bit, capital letter to indicate sub-structure
 (define-record-type patricia
@@ -398,8 +399,7 @@
 	     (aux (patricia-R T)))
 	    ((patricia-leaf? T) 
 	     (proc (patricia-leaf-key T)
-		   (patricia-leaf-item T)))
-	    (else (void))))
+		   (patricia-leaf-item T)))))
     (aux tree)))
 
 (define tree-fold-right

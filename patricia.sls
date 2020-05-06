@@ -40,6 +40,7 @@
 	  maximum
 	  tree-size
 	  view-tree)
-  (import (chezscheme))
+  (import (rnrs)
+          (only (chezscheme) include logbit0 logor ash logbit? logxor make-list))
   
   (include "code/patricia.scm"))
