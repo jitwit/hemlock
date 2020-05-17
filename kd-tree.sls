@@ -28,14 +28,14 @@
 	  tree->alist
 	  tree->keys
 	  tree->items
-	  root
-	  leaf-key
-	  leaf-value
-	  make-leaf
+          root
+          leaf-key
+          leaf-value
 
 	  ;; misc 
 	  tree->sexp
-	  inside-region?)
+	  inside-region?
+          audit)
   (import (chezscheme))
 
   (include "code/outils.scm")

@@ -22,5 +22,3 @@
 (assert (equal? '(5 6 7 8 9) (tree->keys (split>= 5 T10))))
 (assert (tree-equal? T10 (symmetric-difference (split< 5 T10) (split>= 5 T10))))
 (assert (tree-equal? T10 (symmetric-difference (split<= 5 T10) (split> 5 T10))))
-
-

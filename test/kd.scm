@@ -1,5 +1,6 @@
-(load "outils.scm")
-(load "kd-tree.scm")
+(library-directories "./..") (print-gensym #f)
+(import (kd-tree)
+        (vector))
 
 (define tree1
   (alist->tree
