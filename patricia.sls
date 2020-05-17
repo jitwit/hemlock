@@ -35,7 +35,9 @@
 	  successor
 	  predecessor
 	  split<
+	  split<=
 	  split>
+	  split>=
 	  minimum
 	  maximum
 	  tree-size
