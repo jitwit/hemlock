@@ -14,74 +14,89 @@
   (lambda (tree)
     (eq? tree 'empty)))
 
+(define kd-tree?
+  (lambda (tree)
+    (or (%kd? tree) (%leaf? tree) (empty? tree))))
+
+(define-syntax check-tree
+  (syntax-rules ()
+    ((check-tree function input)
+     (unless (kd-tree? input)
+       (error function "expected kd tree" input)))))
+
 (define pair->leaf
   (lambda (v.x)
     (make-%leaf (car v.x) (cdr v.x))))
 
 (define size
   (lambda (tree)
-    (cond ((%kd? tree) (%kd-size tree))
-	  ((%leaf? tree) 1)
-	  (else 0))))
+    (check-tree 'size tree)
+    (cond
+     ((%kd? tree) (%kd-size tree))
+     ((%leaf? tree) 1)
+     (else 0))))
 
 (define kd-min
   (lambda (tree)
-    (let ((L (%kd-L tree))
-	  (R (%kd-R tree)))
-      (cond ((and (empty? L) (empty? R))
-	     (%leaf-key (root tree)))
-	    ((empty? L)
-	     (vector-map min
-			 (%leaf-key (root tree))
-			 (kd-min (%kd-R tree))))
-	    ((empty? R)
-	     (vector-map min
-			 (%leaf-key (root tree))
-			 (kd-min (%kd-L tree))))
-	    (else
-	     (vector-map min
-			 (%leaf-key (root tree))
-			 (kd-min (%kd-L tree))
-			 (kd-min (%kd-R tree))))))))
+    (let ((L (%kd-L tree)) (R (%kd-R tree)))
+      (cond
+       ((and (empty? L) (empty? R))
+        (%leaf-key (root tree)))
+       ((empty? L)
+        (vector-map min
+                    (%leaf-key (root tree))
+                    (kd-min (%kd-R tree))))
+       ((empty? R)
+        (vector-map min
+                    (%leaf-key (root tree))
+                    (kd-min (%kd-L tree))))
+       (else
+        (vector-map min
+                    (%leaf-key (root tree))
+                    (kd-min (%kd-L tree))
+                    (kd-min (%kd-R tree))))))))
 
 (define kd-max
   (lambda (tree)
-    (let ((L (%kd-L tree))
-	  (R (%kd-R tree)))
-      (cond ((and (empty? L) (empty? R))
-	     (%leaf-key (root tree)))
-	    ((empty? L)
-	     (vector-map max
-			 (%leaf-key (root tree))
-			 (kd-max (%kd-R tree))))
-	    ((empty? R)
-	     (vector-map max
-			 (%leaf-key (root tree))
-			 (kd-max (%kd-L tree))))
-	    (else
-	     (vector-map max
-			 (%leaf-key (root tree))
-			 (kd-max (%kd-L tree))
-			 (kd-max (%kd-R tree))))))))
+    (let ((L (%kd-L tree)) (R (%kd-R tree)))
+      (cond
+       ((and (empty? L) (empty? R))
+        (%leaf-key (root tree)))
+       ((empty? L)
+        (vector-map max
+                    (%leaf-key (root tree))
+                    (kd-max (%kd-R tree))))
+       ((empty? R)
+        (vector-map max
+                    (%leaf-key (root tree))
+                    (kd-max (%kd-L tree))))
+       (else
+        (vector-map max
+                    (%leaf-key (root tree))
+                    (kd-max (%kd-L tree))
+                    (kd-max (%kd-R tree))))))))
 
 (define join-kd-min
   (lambda (L R root)
-    (cond ((empty? L) (vector-map min (kd-min R) (%leaf-key root)))
-	  ((empty? R) (vector-map min (kd-min L) (%leaf-key root)))
-	  (else (vector-map min (kd-min L) (kd-min R) (%leaf-key root))))))
+    (cond
+     ((empty? L) (vector-map min (kd-min R) (%leaf-key root)))
+     ((empty? R) (vector-map min (kd-min L) (%leaf-key root)))
+     (else (vector-map min (kd-min L) (kd-min R) (%leaf-key root))))))
 
 (define join-kd-max
   (lambda (L R root)
-    (cond ((empty? L) (vector-map max (kd-max R) (%leaf-key root)))
-	  ((empty? R) (vector-map max (kd-max L) (%leaf-key root)))
-	  (else (vector-map max (kd-max L) (kd-max R) (%leaf-key root))))))
+    (cond
+     ((empty? L) (vector-map max (kd-max R) (%leaf-key root)))
+     ((empty? R) (vector-map max (kd-max L) (%leaf-key root)))
+     (else (vector-map max (kd-max L) (kd-max R) (%leaf-key root))))))
 
 (define join
   (lambda (root L R axis)
-    (cond ((and (empty? L) (empty? R)) root)
-	  (else (make-%kd root L R
-			  axis
-			  (+ 1 (size L) (size R)))))))
+    (cond
+     ((and (empty? L) (empty? R)) root)
+     (else (make-%kd root L R
+                     axis
+                     (fx+ 1 (size L) (size R)))))))
 
 (define root
   (lambda (tree)
@@ -104,100 +119,89 @@
 
 (define build
   (lambda (points k d n)
-    (cond ((= n 0) 'empty)
-	  ((= n 1) (car points))
-	  (else (let* ((pts (sort (lambda (u v)
-				    (< (vector-ref (%leaf-key u) k)
-				       (vector-ref (%leaf-key v) k)))
-				  points))
-		       (a (quotient (1- n) 2))
-		       (ls (list-head pts a))
-		       (rs (list-tail pts a))
-		       (k* (mod (1+ k) d)))
-		  (join (car rs)
-			(build ls k* d a)
-			(build (cdr rs) k* d (- n a 1))
-			k))))))
+    (cond ((fx= n 0) 'empty)
+	  ((fx= n 1) (car points))
+	  (else (let ((pts (sort (lambda (u v)
+                                   (< (vector-ref (%leaf-key u) k)
+                                      (vector-ref (%leaf-key v) k)))
+                                 points))
+                      (a (fx/ (fx1- n) 2))
+                      (k* (fxmod (fx1+ k) d)))
+                  (let ((rs (list-tail pts a)))
+                    (join (car rs)
+                          (build (list-head pts a) k* d a)
+                          (build (cdr rs) k* d (fx- n a 1))
+                          k)))))))
 
 (define closed-nhood
   (lambda (tree v radius metric)
-    (letrec ((d (vector-length v))
-	     (query (lambda (tree k)
-		      (cond ((empty? tree) '())
-			    ((%kd? tree)
-			     (let* ((r (root tree))
-				    (rk (vector-ref (%leaf-key r) k))
-				    (vk (vector-ref v k))
-				    (dk (- vk rk))
-				    (k* (mod (1+ k) d))
-				    (L (%kd-L tree))
-				    (R (%kd-R tree)))
-			       (cond ((> dk radius) (query R k*))
-				     ((> (- dk) radius) (query L k*))
-				     (else `(,@(query L k*)
-					     ,@(query r k*)
-					     ,@(query R k*))))))
-			    (else
-			     (if (<= (metric v (car tree))
-				     radius)
-				 `(,tree)
-				 '()))))))
-      (query tree 0))))
+    (let ((d (dimension tree)))
+      (let query ((tree tree) (k 0))
+        (cond
+         ((%kd? tree)
+          (let ((r (root tree))
+                (k* (fxmod (fx1+ k) d))
+                (L (%kd-L tree))
+                (R (%kd-R tree)))
+            (let ((rk (vector-ref (%leaf-key r) k))
+                  (vk (vector-ref v k)))
+              (let ((dk (- vk rk)))
+                (cond ((> dk radius) (query R k*))
+                      ((> (- dk) radius) (query L k*))
+                      (else `(,@(query L k*)
+                              ,@(query r k*)
+                              ,@(query R k*))))))))
+         ((and (%leaf? tree) (<= (metric v (%leaf-key tree)) radius))
+          `(,tree))
+         (else '()))))))
 
 (define open-nhood
   (lambda (tree v radius metric)
-    (letrec ((d (vector-length v))
-	     (query (lambda (tree k)
-		      (cond ((empty? tree) '())
-			    ((%kd? tree)
-			     (let* ((r (root tree))
-				    (rk (vector-ref (%leaf-key r) k))
-				    (vk (vector-ref v k))
-				    (dk (- vk rk))
-				    (k* (mod (1+ k) d))
-				    (L (%kd-L tree))
-				    (R (%kd-R tree)))
-			       (cond ((>= dk radius) (query R k*))
-				     ((>= (- dk) radius) (query L k*))
-				     (else `(,@(query L k*)
-					     ,@(query r k*)
-					     ,@(query R k*))))))
-			    (else
-			     (if (< (metric v (%leaf-key tree))
-				    radius)
-				 `(,tree)
-				 '()))))))
-      (query tree 0))))
+    (let ((d (dimension tree)))
+      (let query ((tree tree) (k 0))
+        (cond
+         ((%kd? tree)
+          (let ((r (root tree))
+                (k* (fxmod (fx1+ k) d))
+                (L (%kd-L tree))
+                (R (%kd-R tree)))
+            (let ((rk (vector-ref (%leaf-key r) k))
+                  (vk (vector-ref v k)))
+              (let ((dk (- vk rk)))
+                (cond ((>= dk radius) (query R k*))
+                      ((>= (- dk) radius) (query L k*))
+                      (else `(,@(query L k*)
+                              ,@(query r k*)
+                              ,@(query R k*))))))))
+         ((and (%leaf? tree) (< (metric v (%leaf-key tree)) radius))
+          `(,tree))
+         (else '()))))))
 
 (define nearest-neighbor
   (lambda (tree v metric)
-    (letrec ((d (vector-length v))
-	     (n #f)
-	     (x +inf.0)
-	     (query (lambda (tree k)
-		      (unless (empty? tree)
-			(if (%kd? tree)
-			    (let* ((r (root tree))
-				   (rk (vector-ref (%leaf-key r) k))
-				   (vk (vector-ref v k))
-				   (dk (- vk rk))
-				   (k* (mod (1+ k) d))
-				   (L (%kd-L tree))
-				   (R (%kd-R tree)))
-			      (query r k*)
-			      (cond ((and (<= 0 dk) (<= x dk))
-				     (query R k*))
-				    ((and (<= dk 0) (<= x (- dk)))
-				     (query L k*))
-				    (else
-				     (query L k*)
-				     (query R k*))))
-			    (let* ((r (%leaf-key tree))
-				   (y (metric v r)))
-			      (when (and (< y x) (not (= y 0)))
-				(set! x y)
-				(set! n tree))))))))
-      (query tree 0)
+    (let ((d (dimension tree)) (n #f) (x +inf.0))
+      (let query ((tree tree) (k 0))
+        (unless (empty? tree)
+          (if (%kd? tree)
+              (let ((r (root tree))
+                    (k* (fxmod (fx1+ k) d))
+                    (L (%kd-L tree))
+                    (R (%kd-R tree)))
+                (let ((rk (vector-ref (%leaf-key r) k))
+                      (vk (vector-ref v k)))
+                  (let ((dk (- vk rk)))
+                    (query r k*)
+                    (cond ((and (<= 0 dk) (<= x dk))
+                           (query R k*))
+                          ((and (<= dk 0) (<= x (- dk)))
+                           (query L k*))
+                          (else
+                           (query L k*)
+                           (query R k*))))))
+              (let ((y (metric v (%leaf-key tree))))
+                (when (and (< y x) (not (= y 0)))
+                  (set! x y)
+                  (set! n tree))))))
       n)))
 
 (define inside-region?
@@ -271,9 +275,8 @@
 
 (define dimension
   (lambda (tree)
-    (cond ((%kd? tree) (vector-length (car (%kd-root tree))))
-	  ((empty? tree) -1)
-	  (else (vector-length (car tree))))))
+    (check-tree 'dimension tree)
+    (vector-length (%leaf-key (if (%kd? tree) (%kd-root tree) tree)))))
 
 (define max-in-dimension
   (lambda (tree k0 d)
@@ -425,15 +428,14 @@
 
 (define tree->keys
   (lambda (tree)
-    (letrec ((aux (lambda (tree)
-		    (cond ((%kd? tree)
-			   `(,@(aux (%kd-L tree))
-			     ,(%leaf-key (root tree))
-			     ,@(aux (%kd-R tree))))
-			  ((empty? tree) '())
-			  (else `(,(%leaf-key tree))))
-		    )))
-      (aux tree))))
+    (check-tree 'tree->keys tree)
+    (let aux ((tree tree))
+      (cond ((%kd? tree)
+             `(,@(aux (%kd-L tree))
+               ,(%leaf-key (root tree))
+               ,@(aux (%kd-R tree))))
+            ((%leaf? tree) `(,(%leaf-key tree)))
+            (else '())))))
 
 (define tree->items
   (lambda (tree)
@@ -504,4 +506,5 @@
 		    points))
 	   (let ((d (vector-length (caar points))))
 	     (build (map pair->leaf points) 0 d (length points)))))))
+
 

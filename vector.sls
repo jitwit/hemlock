@@ -12,10 +12,10 @@
 	  v:<
 	  v:>
 	  v:dist
-	  v:lp
-	  v:l1
-	  v:l2
-	  v:l-inf
+	  lp
+	  l1
+	  l2
+	  l-inf
 	  _x
 	  _y
 	  _z)

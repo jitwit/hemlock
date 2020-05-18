@@ -1,4 +1,5 @@
 (library-directories "./..") (print-gensym #f)
+(load "./../kd-tree.so")
 (import (kd-tree)
         (vector))
 
@@ -39,22 +40,38 @@
 	     #(8 52) #(7 38))))
     (alist->tree (map cons v (enumerate v)))))
 
-(define (test-delete tree)
-  (let ((start (leaf-key (root tree))))
-    (let loop ((tree (delete tree start)) (route (list start)))
-      (if (empty? tree)
-	  route
-	  (let* ((node (leaf-key (nearest-neighbor tree (car route) v:l1)))
-		 (tree (delete tree node)))
-	    (unless (audit tree)
-	      (error 'deletion!
-		     "kd tree invalid after deleting given node from tree"
-		     node
-		     tree))
-	    (loop tree (cons node route)))))))
-
-(define (basic-tests)
+(define (check-deletion)
+  (define (test-delete tree)
+    ;; greedy tsp tour of points by way of deleting from kd tree,
+    ;; auditing tree invariants after each deletion
+    (let ((start (leaf-key (root tree))))
+      (let loop ((tree (delete tree start)) (route (list start)))
+        (if (empty? tree)
+            route
+            (let* ((node (leaf-key (nearest-neighbor tree (car route) v:l1)))
+                   (tree (delete tree node)))
+              (unless (audit tree)
+                (error 'deletion!
+                       "kd tree invalid after deleting given node from tree"
+                       node
+                       tree))
+              (loop tree (cons node route)))))))
   (for-each (lambda (t)
 	      (format #t "testing deletion~%")
 	      (assert (list? (test-delete t))))
 	    (list tree1 tree2 tree3)))
+
+(define (check-dim)
+  (format #t "checking dimension~%")
+  (assert (= 2 (dimension tree1))))
+
+(define (check-nhoods)
+  (format #t "checking  nhoods~%")  
+  (assert (= 2 (length (closed-nhood tree3 '#(50 50) 10 l1))))
+  (assert (= 1 (length (open-nhood   tree3 '#(50 50) 10 l1)))))
+
+(define (basic-tests)
+  (check-deletion)
+  (check-dim)
+  )
+

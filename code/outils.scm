@@ -14,23 +14,23 @@
     (sqrt (v:fold2 u v 0 (lambda (d ui vi)
 			   (+ d (square (- ui vi))))))))
 
-(define v:l1
+(define l1
   (lambda (u v)
     (v:fold2 u v 0 (lambda (d ui vi)
 		     (+ d (abs (- ui vi)))))))
 
-(define v:l2
+(define l2
   (lambda (u v)
     (sqrt
      (v:fold2 u v 0 (lambda (d ui vi)
 		      (+ d (square (- ui vi))))))))
 
-(define v:l-inf
+(define l-inf
   (lambda (u v)
     (v:fold2 u v 0 (lambda (d ui vi)
 		     (max d (abs (- ui vi)))))))
 
-(define v:lp
+(define lp
   (lambda (p)
     (lambda (u v)
       (expt (v:fold2 u v 0 (lambda (d ui vi)

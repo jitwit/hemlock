@@ -35,7 +35,8 @@
 	  ;; misc 
 	  tree->sexp
 	  inside-region?
-          audit)
+          audit
+          l1 l2 lp l-inf)
   (import (chezscheme))
 
   (include "code/outils.scm")
