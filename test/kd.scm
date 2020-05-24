@@ -1,5 +1,7 @@
 (library-directories "./..") (print-gensym #f)
+(load "./../pairing-heap.so")
 (load "./../kd-tree.so")
+
 (import (kd-tree)
         (vector))
 
@@ -72,11 +74,29 @@
 
 (define (check-insert/lookup)
   (format #t "checking insert/lookup~%")
-  (assert (= 3 (cdr(lookup (insert-with + tree1 '#(25 20) -3) '#(25 20))))))
+  (assert (= 3 (leaf-value (lookup (insert-with + tree1 '#(25 20) -3) '#(25 20))))))
+
+(define (check-nearest-nodes)
+  (define N 10)
+  (define home '#(0 0))
+  (define dist (lambda (x) (l1 home x)))
+  (define nodes
+    (map dist
+         (map car
+              (list-head
+               (sort (lambda (x y) (< (dist (car x)) (dist (car y))))
+                     (tree->alist tree3))
+               N))))
+  (define results
+    (map dist (map car (map leaf->pair (nearest-nodes N tree3 home l1)))))
+  (format #t "checking nearest nodes~%")
+  (assert (equal? nodes results))
+  )
 
 (define (basic-tests)
   (check-deletion)
   (check-dim)
   (check-insert/lookup)
+  (check-nearest-nodes)
   )
 

@@ -4,11 +4,12 @@
 
 ;; (eval-when (compile) (optimize-level 3))
 (for-each compile-library
-          '("./kd-tree.sls"
+          '("./pairing-heap.sls"
+            "./vector.sls"
+            "./kd-tree.sls"
             "./patricia.sls"
             "./patricia-set.sls"
             "./batched-queue.sls"
-            "./vector.sls"
             "./union-find.sls"
             "./alga.sls"
-            "./pairing-heap.sls"))
+            ))

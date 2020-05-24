@@ -15,6 +15,7 @@
 	  open-nhood
 	  nearest-neighbor
 	  nearest-node
+	  nearest-nodes
 	  min-in-dimension
 	  max-in-dimension
 	  dimension
@@ -30,11 +31,13 @@
           leaf-key
           leaf-value
 
-	  ;; misc 
+	  ;; misc
+          leaf->pair
 	  inside-region?
           audit
           l1 l2 lp l-inf)
-  (import (chezscheme))
+  (import (chezscheme)
+          (prefix (pairing-heap) h:))
 
   (include "code/outils.scm")
   (include "code/kd-tree.scm")
