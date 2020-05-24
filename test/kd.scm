@@ -66,12 +66,17 @@
   (assert (= 2 (dimension tree1))))
 
 (define (check-nhoods)
-  (format #t "checking  nhoods~%")  
+  (format #t "checking nhoods~%")
   (assert (= 2 (length (closed-nhood tree3 '#(50 50) 10 l1))))
   (assert (= 1 (length (open-nhood   tree3 '#(50 50) 10 l1)))))
+
+(define (check-insert/lookup)
+  (format #t "checking insert/lookup~%")
+  (assert (= 3 (cdr(lookup (insert-with + tree1 '#(25 20) -3) '#(25 20))))))
 
 (define (basic-tests)
   (check-deletion)
   (check-dim)
+  (check-insert/lookup)
   )
 

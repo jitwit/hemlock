@@ -31,7 +31,6 @@
           leaf-value
 
 	  ;; misc 
-	  tree->sexp
 	  inside-region?
           audit
           l1 l2 lp l-inf)
