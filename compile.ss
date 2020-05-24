@@ -2,6 +2,7 @@
 
 (import (chezscheme))
 
+;; (eval-when (compile) (optimize-level 3))
 (for-each compile-library
           '("./kd-tree.sls"
             "./patricia.sls"

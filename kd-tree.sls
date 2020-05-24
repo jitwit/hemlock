@@ -1,5 +1,3 @@
-(eval-when (compile) (optimize-level 3))
-
 (library (kd-tree)
   (export empty?
 	  
