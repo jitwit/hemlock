@@ -83,10 +83,10 @@
   (define nodes
     (map dist
          (map car
-              (list-head
-               (sort (lambda (x y) (< (dist (car x)) (dist (car y))))
-                     (tree->alist tree3))
-               N))))
+              (list-head (sort (lambda (x y)
+				 (< (dist (car x)) (dist (car y))))
+			       (tree->alist tree3))
+			 N))))
   (define results
     (map dist (map car (map leaf->pair (nearest-nodes N tree3 home l1)))))
   (format #t "checking nearest nodes~%")

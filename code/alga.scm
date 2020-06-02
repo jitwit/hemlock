@@ -5,10 +5,11 @@
 (define empty-graph
   t:empty)
 
-(define check-vertex
-  (lambda (v)
-    (unless (and (integer? v) (exact? v) (<= 0 v))
-      (error 'graph "vertex most be nonnegative integer" v))))
+(define-syntax check-vertex
+  (syntax-rules ()
+    ((_ v)
+     (unless (and (integer? v) (exact? v) (<= 0 v))
+       (error 'graph "vertex most be nonnegative integer" v)))))
 
 (define vertex
   (lambda (v)
@@ -136,8 +137,10 @@
 
 (define clique
   (lambda (vs)
-    (remove-self-loops
-     (bi-clique vs vs))))
+    (fold-right (lambda (v G)
+                  (connect (vertex v) G))
+                empty-graph
+                vs)))
 
 (define star
   (lambda (v vs)
