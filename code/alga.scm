@@ -5,6 +5,10 @@
 (define empty-graph
   t:empty)
 
+(define empty?
+  (lambda (G)
+    (eq? G empty-graph)))
+
 (define vertex
   (lambda (v)
     (t:singleton v s:empty-set)))
@@ -31,9 +35,17 @@
   (lambda (G H)
     (let ((W (fold-right s:insert s:empty-set (t:tree->keys H))))
       (t:union-with s:union
-		    G
-		    H
-		    (t:tree-map (lambda (ignore) W) G)))))
+                    G
+                    H
+                    (t:tree-map (lambda (ignore) W) G)))))
+
+(define connects
+  (lambda (GS)
+    (fold-right connect empty-graph GS)))
+
+(define connects*
+  (lambda GS
+    (connects GS)))
 
 ;;; Manipulation
 
@@ -83,7 +95,7 @@
 
 (define vertices*
   (lambda vs
-    (apply vertices vs)))
+    (vertices vs)))
 
 (define edges
   (lambda (es)
@@ -102,9 +114,9 @@
   (lambda (vs)
     (if (null? vs)
         empty-graph
-        (let loop ((vs vs) (v (car vs)) (G empty-graph))
+        (let walk ((vs (cdr vs)) (v (car vs)) (G empty-graph))
           (if (pair? vs)
-              (loop (cdr vs) (car vs) (overlay (edge v (car vs)) G))
+              (walk (cdr vs) (car vs) (overlay (edge v (car vs)) G))
               G)))))
 
 (define circuit
@@ -112,9 +124,9 @@
     (if (null? vs)
 	empty-graph
         (let ((v (car vs)))
-          (let loop ((vs (cdr vs)) (u v) (G empty-graph))
+          (let walk ((vs (cdr vs)) (u v) (G empty-graph))
             (if (pair? vs)
-                (loop (cdr vs)
+                (walk (cdr vs)
                       (car vs)
                       (overlay (edge u (car vs))
                                G))
@@ -136,8 +148,15 @@
   (lambda (v vs)
     (connect (vertex v) (vertices vs))))
 
-;;; Queries
+(define stars
+  (lambda (v.ess)
+    (fold-right (lambda (v.es G)
+                  (overlay (star (car v.es) (cdr v.es))
+                           G))
+                empty-graph
+                v.ess)))
 
+;;; Queries
 (define vertex-list
   (lambda (G)
     (t:tree->keys G)))
@@ -189,6 +208,12 @@
   (lambda (G v)
     (and (t:lookup-with-default v #f G)
 	 #t)))
+
+(define has-edge?
+  (lambda (G u v)
+    (cond ((t:lookup-with-default u #f G)
+           => (lambda (vs) (s:member? v vs)))
+          (else #t))))
 
 (define vertex-count
   (lambda (G)

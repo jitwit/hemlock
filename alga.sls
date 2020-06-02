@@ -15,15 +15,10 @@
           edge
           overlay
           connect
+          connects
+          connects*
           overlays
           overlays*
-
-          ;; manipulation
-          insert-vertex
-          insert-edge
-          transpose
-          remove-self-loops
-          induce
 
           ;; common graphs
           vertices
@@ -34,8 +29,17 @@
           bi-clique
           clique
           star
+          stars
+
+          ;; manipulation
+          insert-vertex
+          insert-edge
+          transpose
+          remove-self-loops
+          induce
 
           ;; queries
+          empty?
           vertex-list
           vertex-list-descending
           edge-list
@@ -44,6 +48,7 @@
           incoming-edges
           incoming-edges-descending
           has-vertex?
+          has-edge?
           vertex-count
           edge-count
           
