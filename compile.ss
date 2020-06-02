@@ -3,6 +3,7 @@
 (import (chezscheme))
 
 ;; (eval-when (compile) (optimize-level 3))
+(compile-profile 'source)
 (for-each compile-library
           '("./pairing-heap.sls"
             "./vector.sls"
