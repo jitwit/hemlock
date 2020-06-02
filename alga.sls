@@ -27,6 +27,7 @@
 
           ;; common graphs
           vertices
+          vertices*
           edges
           path
           circuit

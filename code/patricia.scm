@@ -24,7 +24,13 @@
   (fields p b L R))
 
 (define-record-type patricia-leaf
-  (fields key item))
+  (fields key item)
+  (protocol
+   (lambda (new)
+     (lambda (k v)
+       (unless (and (exact? k) (integer? k))
+         (error 'patricia "expecting integer key" k))
+       (new k v)))))
 
 (define tree-equal?
   (lambda (S T)

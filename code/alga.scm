@@ -5,39 +5,23 @@
 (define empty-graph
   t:empty)
 
-(define-syntax check-vertex
-  (syntax-rules ()
-    ((_ v)
-     (unless (and (integer? v) (exact? v) (<= 0 v))
-       (error 'graph "vertex most be nonnegative integer" v)))))
-
 (define vertex
   (lambda (v)
-    (check-vertex v)
     (t:singleton v s:empty-set)))
 
 (define edge
   (lambda (u v)
-    (check-vertex u)
-    (check-vertex v)
-    (t:insert-with s:union v s:empty-set (t:singleton u (s:singleton v)))))
+    (if (= u v)
+        (t:singleton u (s:singleton v))
+        (t:insert-with s:union v s:empty-set (t:singleton u (s:singleton v))))))
 
 (define overlay
   (lambda (G H)
     (t:merge-with s:union G H)))
 
-(define %overlays
-  (case-lambda
-    ((G H . gs)
-     (overlay (overlay G H) (apply %overlays gs)))
-    ((G H)
-     (overlay G H))
-    ((G) G)
-    (() empty-graph)))
-
 (define overlays
   (lambda (graphs)
-    (apply %overlays graphs)))
+    (fold-right overlay empty-graph graphs)))
 
 (define overlays*
   (lambda graphs
@@ -55,13 +39,10 @@
 
 (define insert-vertex
   (lambda (v G)
-    (check-vertex v)
     (t:insert-with s:union v s:empty-set G)))
 
 (define insert-edge
   (lambda (u v G)
-    (check-vertex u)
-    (check-vertex v)
     (t:insert-with s:union
 		   u
 		   (s:singleton v)
@@ -96,16 +77,17 @@
 (define vertices
   (lambda (vs)
     (fold-right (lambda (v G)
-		  (check-vertex v)
 		  (t:insert v s:empty-set G))
 		t:empty
 		vs)))
 
+(define vertices*
+  (lambda vs
+    (apply vertices vs)))
+
 (define edges
   (lambda (es)
     (fold-right (lambda (uv G)
-		  (check-vertex (car uv))
-		  (check-vertex (cdr uv))
 		  (t:insert-with s:union
 				 (car uv)
 				 (s:singleton (cdr uv))
@@ -120,16 +102,24 @@
   (lambda (vs)
     (if (null? vs)
         empty-graph
-        (let loop ((vs vs) (G (list empty-graph)))
-          (if (pair? (cdr vs))
-              (loop (cdr vs) (cons (edge (car vs) (cadr vs)) G))
-              (overlays G))))))
+        (let loop ((vs vs) (v (car vs)) (G empty-graph))
+          (if (pair? vs)
+              (loop (cdr vs) (car vs) (overlay (edge v (car vs)) G))
+              G)))))
 
 (define circuit
   (lambda (vs)
     (if (null? vs)
 	empty-graph
-	(overlays (map edge vs `(,@(cdr vs) ,(car vs)))))))
+        (let ((v (car vs)))
+          (let loop ((vs (cdr vs)) (u v) (G empty-graph))
+            (if (pair? vs)
+                (loop (cdr vs)
+                      (car vs)
+                      (overlay (edge u (car vs))
+                               G))
+                (overlay (edge u v)
+                         G)))))))
 
 (define bi-clique
   (lambda (us vs)
