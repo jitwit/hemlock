@@ -10,6 +10,7 @@
             "./kd-tree.sls"
             "./patricia.sls"
             "./patricia-set.sls"
+	    "./trie.sls"
             "./batched-queue.sls"
             "./union-find.sls"
             "./alga.sls"

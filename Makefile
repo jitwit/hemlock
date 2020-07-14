@@ -1,19 +1,17 @@
 package = chez-hemlock
 version = 0.1
-chez := scheme
+chez = scheme
+out =
 
-prefix = 
-libdir = ${prefix}/lib
+build :
+	$(chez) --program compile.ss
 
-chezversion ::= $(shell echo '(call-with-values scheme-version-number (lambda (a b c) (format \#t "~d.~d" a b)))' | ${chez} -q)
-schemedir = ${libdir}/csv${chezversion}-site
-
-build:
-	${chez} --program compile.ss
+install :
+	mkdir -p $(out)
+	cp -r *.so $(out)
 
 clean:
 	find . -name "*.so" -exec rm {} \;
-	find . -name "*.html" -exec rm {} \;
 	find . -name "*~" -exec rm {} \;
 
 
