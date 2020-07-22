@@ -1,4 +1,3 @@
-
 (define-record-type queue
   (fields hd tl)
   (protocol
@@ -48,9 +47,3 @@
       (if (null? hd)
 	  (error 'tailq "tail on empty queue")
 	  (make-queue (cdr hd) (queue-tl Q))))))
-
-
-
-
-
-

@@ -9,11 +9,10 @@
 
 (define (singleton s v)
   (let ((n (string-length s)))
-    (define (aux j)
+    (let aux ((j 0))
       (if (= j n)
-          (make-trie v t:empty)
-          (make-trie #f (t:singleton (char-ref s j) (aux (1+ j))))))
-    (aux 0)))
+	  (make-trie v t:empty)
+	  (make-trie #f (t:singleton (char-ref s j) (aux (1+ j))))))))
 
 (define (merge-tries S T)
   (cond ((t:empty? S) T)
@@ -42,12 +41,11 @@
             (else #f)))))
 
 (define (trie-ref* T xs)
-  (define (aux T xs)
+  (let aux ((T T) (xs xs))
     (cond ((null? xs) T)
           ((t:lookup (char->integer (car xs)) (trie-tries T))
            => (lambda (x.ts) (aux (cdr x.ts) (cdr xs))))
-          (else #f)))
-  (aux T xs))
+          (else #f))))
 
 (define (lookup-char x T)
   (t:lookup (char->integer x) (trie-tries T)))

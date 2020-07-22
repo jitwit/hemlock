@@ -1,4 +1,3 @@
-
 (define-record-type pairing-heap
   (fields key element subtrees))
 

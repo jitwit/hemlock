@@ -1,5 +1,4 @@
-
-(include "code/pairing-heap.scm")
+(import (pairing-heap))
 
 (define (heap-sort xs)
   (let loop ((H (fold-right (lambda (x H)
@@ -17,6 +16,6 @@
       (cons (random hi) (random-list hi (1- n)))))
 
 (define (test)
-  (let ((xs (random-list 400 100)))
+  (let ((xs (random-list 4000000 1000000)))
     (assert (equal? (sort < xs)
                     (heap-sort xs)))))

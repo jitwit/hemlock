@@ -8,6 +8,7 @@
 	  trie-step
           trie-prefix?
           trie-member?
+	  singleton
           lookup
           lookup-char
           lookup-string
