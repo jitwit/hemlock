@@ -43,7 +43,8 @@ fn {a:t@ype} lookup (key:uint, tree:patricia a) : Option a = let
     | _ => None
 in lp tree end
 
-fn {a:t@ype} insert (k:uint, v: a, T:patricia a) : patricia a = let
+fn {a:t@ype} insert_with 
+(union:(a,a) -> a, k:uint, v: a, T:patricia a) : patricia a = let
   fun lp (T : patricia a) = case T of
   | E() => L (k, v)
   | L(k_,v_) => let
@@ -56,8 +57,37 @@ fn {a:t@ype} insert (k:uint, v: a, T:patricia a) : patricia a = let
     else join_tree (pk,singleton(k,v),pk_,T) end
 in lp T end
 
+fn{a:t@ype} insert (k:uint, v: a, T:patricia a) : patricia a = 
+insert_with (lam(x,y) => x, k,v,T)
+
+fn {a,b,c:t@ype} flip (f : (a,b) -> c) : (b,a) -> c = 
+lam (x,y) => f(y,x)
+
+fn {a:t@ype} merge_with
+(union:(a,a) -> a,s:patricia a, t:patricia a): patricia a = let 
+  fun lp(S:patricia a,T:patricia a) = case (S,T) of
+  | (E(),_) => T
+  | (_,E()) => S
+  | (L(k,v),_) => insert_with (union, k, v, T)
+  | (_,L(k,v)) => insert_with (flip union, k, v, T)
+  | (B(p,b,sl,sr),B(q,c,tl,tr)) => 
+  case p=b && b=c of
+// fn match_prefix (bit:BB, pre:uint, key:uint) : bool = pre = mask (bit, key)
+  | true => make_tree(p,b,S,T)
+  | _ => case (b < c) && match_prefix(c,q,p) of
+  | true => if is_bit_set (p,c)
+            then make_tree(q,c,tl,lp(S,tr))
+            else make_tree(q,c,lp(S,tl),tr)
+  | _ => case (c < b) && match_prefix(b,p,q) of
+  | true => if is_bit_set(q,b)
+            then make_tree(p,b,sl,(lp(sr,T)))
+            else E // make_tree(p,b,(lp(sl,T),sr))
+  | _ => E
+in lp(s,t) end
+
 (* int __builtin_clz (unsigned int x) *)
 val egtree : patricia string = insert (8U, "pinou", singleton (12U, "ninou"))
+val egtree_ = insert (123U, "minou", egtree)
 val () = println!("7   = ", mask(3,10U))
 val () = println!("23  = ", mask(3,20U))
 val () = println!("103 = ", mask(3,100U))
@@ -67,7 +97,9 @@ val () = println!("0 = ", is_bit_set(5U,1))
 val () = println!("1 = ", is_bit_set(5U,0))
 val () = println!("4 = ", branch_bit(5U,20U))
 val () = println!("3 = ", branch_bit(10U,5U))
-val () = println!(lookup (8U, egtree))
-val () = println!(lookup (12U, egtree))
+val () = println!(lookup (8U, egtree_))
+val () = println!(lookup (12U, egtree_))
+val () = println!(lookup (120U, egtree_))
+val () = println!(lookup (123U, egtree_))
 
 implement main0 () = ()
