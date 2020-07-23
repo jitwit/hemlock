@@ -2,6 +2,9 @@
 staload UN = "prelude/SATS/unsafe.sats"
 
 typedef BB = [r:nat|0<=r && r < 64] int(r)
+#define SGNN %(0-1)
+#define SGNZ %(0)
+#define SGNP %(1)
 
 datatype patricia (a:t@ype)
 = B of (uint, BB, patricia a, patricia a) | L of (uint, a) | E
@@ -70,18 +73,18 @@ fn {a:t@ype} merge_with
   | (_,E()) => S
   | (L(k,v),_) => insert_with (union, k, v, T)
   | (_,L(k,v)) => insert_with (flip union, k, v, T)
-  | (B(p,b,sl,sr),B(q,c,tl,tr)) => 
-  case p=b && b=c of
-  | true => make_tree(p,b,S,T)
-  | flase => case (b < c) && match_prefix(c,q,p) of
-  | true => if is_bit_set (c,p)
-            then make_tree(q,c,tl,lp(S,tr))
-            else make_tree(q,c,lp(S,tl),tr)
-  | false => case (c < b) && match_prefix(b,p,q) of
-  | true => if is_bit_set(b,q)
-            then make_tree (p,b,sl,lp(sr,T))
-            else make_tree (p,b,lp(sl,T),sr)
-  | false => join (p,T,q,S)
+  | (B(p,b,sl,sr),B(q,c,tl,tr)) =>
+  let val pk = g1ofg0(p) val qk = g1ofg0(q) in
+    if pk = qk
+    then case+ compare (b,c) of 
+    | SGNN => if match_prefix (c,p,q) 
+              then make_tree(q,c,tl,lp(S,tr))
+              else make_tree(q,c,lp(S,tl),tr)
+    | SGNZ => make_tree(p,b,S,T)
+    | SGNP => if match_prefix(b,p,q)
+              then make_tree (p,b,sl,lp(sr,T))
+              else make_tree (p,b,lp(sl,T),sr)
+      else join_tree (pk,T,qk,S) end
 in lp(s,t) end
 
 (* int __builtin_clz (unsigned int x) *)
