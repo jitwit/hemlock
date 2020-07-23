@@ -19,7 +19,7 @@ fn match_prefix (bit:BB, pre:uint, key:uint) : bool = pre = mask (bit, key)
 fn{a:t@ype} match_tree_prefix (tree:patricia a, key:uint) : bool = 
 case tree of | B (p,b,_,_) => match_prefix (b,p,key) | _ => false
 
-fn is_bit_set (key:uint, bit:BB) : bool = g0uint_eq (1U, 1U land (key >> bit))
+fn is_bit_set (bit:BB, key:uint) : bool = g0uint_eq (1U, 1U land (key >> bit))
 
 (* branching-bit:  (- (bitwise-length (logxor p1 p2)) 1) *)
 fn branch_bit{n,m:nat|n != m} (p1:uint(n), p2:uint(m)) : BB =
@@ -29,7 +29,7 @@ fn{a:t@ype} join_tree {n,m:nat|n != m}
 (px:uint(n), tx:patricia a, py:uint(m), ty:patricia a) : patricia a = 
 let val bit = branch_bit(px,py)
     val msk = mask(bit, px) in
-if is_bit_set (px,bit) then B(msk,bit,ty,tx) else B (msk,bit,tx,ty) end
+if is_bit_set (bit,px) then B(msk,bit,ty,tx) else B (msk,bit,tx,ty) end
 
 fn{a:t@ype} make_tree 
 (p:uint, b:BB, tx:patricia a, ty:patricia a) : patricia a =
@@ -43,8 +43,8 @@ fn {a:t@ype} lookup (key:uint, tree:patricia a) : Option a = let
     | _ => None
 in lp tree end
 
-fn {a:t@ype} insert_with 
-(union:(a,a) -> a, k:uint, v: a, T:patricia a) : patricia a = let
+fn {a:t@ype} insert_with
+(union:(a,a) -<cloref1> a, k:uint, v: a, T:patricia a) : patricia a = let
   fun lp (T : patricia a) = case T of
   | E() => L (k, v)
   | L(k_,v_) => let
@@ -57,14 +57,14 @@ fn {a:t@ype} insert_with
     else join_tree (pk,singleton(k,v),pk_,T) end
 in lp T end
 
-fn{a:t@ype} insert (k:uint, v: a, T:patricia a) : patricia a = 
-insert_with (lam(x,y) => x, k,v,T)
+fn{a:t@ype} insert (k:uint, v: a, T:patricia a) : patricia a =
+insert_with (lam(x,y) => x,k,v,T)
 
-fn {a,b,c:t@ype} flip (f : (a,b) -> c) : (b,a) -> c = 
-lam (x,y) => f(y,x)
+fn {a,b,c:t@ype} flip (f : (a,b) -<cloref1> c) : (b,a) -<cloref1> c =
+lam (x,y) => f (y,x)
 
 fn {a:t@ype} merge_with
-(union:(a,a) -> a,s:patricia a, t:patricia a): patricia a = let 
+(union:(a,a) -<cloref1> a,s:patricia a, t:patricia a): patricia a = let 
   fun lp(S:patricia a,T:patricia a) = case (S,T) of
   | (E(),_) => T
   | (_,E()) => S
@@ -72,17 +72,16 @@ fn {a:t@ype} merge_with
   | (_,L(k,v)) => insert_with (flip union, k, v, T)
   | (B(p,b,sl,sr),B(q,c,tl,tr)) => 
   case p=b && b=c of
-// fn match_prefix (bit:BB, pre:uint, key:uint) : bool = pre = mask (bit, key)
   | true => make_tree(p,b,S,T)
-  | _ => case (b < c) && match_prefix(c,q,p) of
-  | true => if is_bit_set (p,c)
+  | flase => case (b < c) && match_prefix(c,q,p) of
+  | true => if is_bit_set (c,p)
             then make_tree(q,c,tl,lp(S,tr))
             else make_tree(q,c,lp(S,tl),tr)
-  | _ => case (c < b) && match_prefix(b,p,q) of
-  | true => if is_bit_set(q,b)
-            then make_tree(p,b,sl,(lp(sr,T)))
-            else E // make_tree(p,b,(lp(sl,T),sr))
-  | _ => E
+  | false => case (c < b) && match_prefix(b,p,q) of
+  | true => if is_bit_set(b,q)
+            then make_tree (p,b,sl,lp(sr,T))
+            else make_tree (p,b,lp(sl,T),sr)
+  | false => join (p,T,q,S)
 in lp(s,t) end
 
 (* int __builtin_clz (unsigned int x) *)
@@ -92,9 +91,9 @@ val () = println!("7   = ", mask(3,10U))
 val () = println!("23  = ", mask(3,20U))
 val () = println!("103 = ", mask(3,100U))
 val () = println!("95  = ", mask(5,100U))
-val () = println!("1 = ", is_bit_set(5U,2))
-val () = println!("0 = ", is_bit_set(5U,1))
-val () = println!("1 = ", is_bit_set(5U,0))
+val () = println!("1 = ", is_bit_set(1,5U))
+val () = println!("0 = ", is_bit_set(1,5U))
+val () = println!("1 = ", is_bit_set(0,5U))
 val () = println!("4 = ", branch_bit(5U,20U))
 val () = println!("3 = ", branch_bit(10U,5U))
 val () = println!(lookup (8U, egtree_))
