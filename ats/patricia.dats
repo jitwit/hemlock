@@ -10,7 +10,13 @@ typedef BB = [r:nat|0<=r && r < 64] int(r)
 datatype patricia (a:t@ype)
 = B of (uint, BB, patricia a, patricia a) | L of (uint, a) | E
 
+datatype trie (a:t@ype)
+= BT of (a, patricia (trie a)) | NT of patricia (trie a)
+
 fun{a:t@ype} singleton (k : uint, v : a) : patricia a = L (k, v)
+
+fn{a:t@ype} empty_patricia (tree : patricia a) : bool
+= case tree of | E() => true |_ =>> false
 
 (* set bits clear bit, setting bits below it *)
 fn mask (bit:BB, key:uint) : uint = let
@@ -90,6 +96,21 @@ fn {a:t@ype} merge_with
               else make_tree (p,b,lp(sl,T),sr) end
 in lp(s,t) end
 
+fn trie_of_word{n:int} (word : list(char,n)) : trie '()
+= let fun lp{n:int} (word : list (char,n)) : trie '()
+  = case word of 
+  | nil() => BT ('(), E)
+  | cons(c,word) => NT (L (char2uint0 c, lp word))
+in lp (word) end
+
+fn{a:t@ype} merge_tries (tx : trie a, ty : trie a) : trie a
+= let fun lp (tx : trie a,ty : trie a) : trie a = 
+  case (tx,ty) of
+  | (NT (tx), NT (ty)) => NT (merge_with (lam (x,y) => lp(x,y) ,tx,ty))
+  | (BT (a, tx), NT (ty)) => BT (a, (merge_with (lam (x,y) => lp(x,y) ,tx,ty)))
+  | (NT (tx), BT (b, ty)) => BT (b, (merge_with (lam (x,y) => lp(x,y) ,tx,ty)))
+  | (BT (a, tx), BT (_, ty)) => BT (a, (merge_with (lam (x,y) => lp(x,y) ,tx,ty)))
+in lp (tx,ty) end
 
 (* int __builtin_clz (unsigned int x) *)
 val egtree : patricia string = insert (8U, "pinou", singleton (12U, "ninou"))
