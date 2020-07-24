@@ -98,19 +98,40 @@ in lp(s,t) end
 
 fn trie_of_word{n:int} (word : list(char,n)) : trie '()
 = let fun lp{n:int} (word : list (char,n)) : trie '()
-  = case word of 
+  = case+ word of 
   | nil() => BT ('(), E)
   | cons(c,word) => NT (L (char2uint0 c, lp word))
 in lp (word) end
 
 fn{a:t@ype} merge_tries (tx : trie a, ty : trie a) : trie a
 = let fun lp (tx : trie a,ty : trie a) : trie a = 
-  case (tx,ty) of
+  case+ (tx,ty) of
   | (NT (tx), NT (ty)) => NT (merge_with (lam (x,y) => lp(x,y) ,tx,ty))
   | (BT (a, tx), NT (ty)) => BT (a, (merge_with (lam (x,y) => lp(x,y) ,tx,ty)))
   | (NT (tx), BT (b, ty)) => BT (b, (merge_with (lam (x,y) => lp(x,y) ,tx,ty)))
   | (BT (a, tx), BT (_, ty)) => BT (a, (merge_with (lam (x,y) => lp(x,y) ,tx,ty)))
 in lp (tx,ty) end
+
+fn{a:t@ype} subtrie (tree : trie a) : patricia (trie a)
+= case+ tree of | BT(_,t) => t | NT (t) => t
+
+fn{a:t@ype} lookup_trie{n:int} (word : list(char,n), dict : trie a) : bool
+= let fun{n:int} lp (word:list(char,n), dict:trie a) : bool = 
+  case+ (word,dict) of
+  | (nil(),BT(_,_)) => true
+  | (nil(),_) => false
+  | (cons(c,word),t) => 
+  let val t = subtrie t
+   in case lookup(char2uint0(c),t) of
+   | Some t => lp (word,t)
+   | None => false end
+in lp (word, dict) end
+
+val empty_dict = NT E
+
+val trie0 = trie_of_word (cons ('c',cons('a',cons('t',nil()))))
+val () = println!("true? ",lookup_trie (cons ('c',cons('a',cons('t',nil()))), trie0))
+val () = println!("false? ",lookup_trie (cons ('t',cons('a',cons('c',nil()))), trie0))
 
 (* int __builtin_clz (unsigned int x) *)
 val egtree : patricia string = insert (8U, "pinou", singleton (12U, "ninou"))
