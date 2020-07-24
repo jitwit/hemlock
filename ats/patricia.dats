@@ -1,4 +1,5 @@
 #include "share/atspre_staload.hats"
+staload "prelude/SATS/string.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
 typedef BB = [r:nat|0<=r && r < 64] int(r)
@@ -96,12 +97,14 @@ fn {a:t@ype} merge_with
               else make_tree (p,b,lp(sl,T),sr) end
 in lp(s,t) end
 
-fn trie_of_word{n:int} (word : list(char,n)) : trie '()
-= let fun lp{n:int} (word : list (char,n)) : trie '()
-  = case+ word of 
-  | nil() => BT ('(), E)
-  | cons(c,word) => NT (L (char2uint0 c, lp word))
-in lp (word) end
+fn trie_of_word{n:nat} (word : string(n)) : trie '()
+= let val n = length(word)
+      fun lp{i,n:nat|i <= n} .<n-i>. 
+      (word:string(n),i:size_t(i),n:size_t(n)) : trie '() =
+      if i+1 = n
+      then NT (L (char2uint0 (string_get_at_guint(word,i)), lp (word,i+1,n)))
+      else BT ('(), E) 
+in lp (word, i2sz(0), n) end
 
 fn{a:t@ype} merge_tries (tx : trie a, ty : trie a) : trie a
 = let fun lp (tx : trie a,ty : trie a) : trie a = 
@@ -129,9 +132,12 @@ in lp (word, dict) end
 
 val empty_dict = NT E
 
-val trie0 = trie_of_word (cons ('c',cons('a',cons('t',nil()))))
-val () = println!("true? ",lookup_trie (cons ('c',cons('a',cons('t',nil()))), trie0))
-val () = println!("false? ",lookup_trie (cons ('t',cons('a',cons('c',nil()))), trie0))
+val trie0 = trie_of_word ("cat")
+val trie1 = trie_of_word ("bat")
+val trie01 = merge_tries(trie0,trie1)
+val () = println!("true? ",lookup_trie (cons ('c',cons('a',cons('t',nil()))), trie01))
+val () = println!("false? ",lookup_trie (cons ('t',cons('a',cons('c',nil()))), trie01))
+val () = println!("true? ",lookup_trie (cons ('b',cons('a',cons('t',nil()))), trie01))
 
 (* int __builtin_clz (unsigned int x) *)
 val egtree : patricia string = insert (8U, "pinou", singleton (12U, "ninou"))
