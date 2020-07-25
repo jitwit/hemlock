@@ -97,11 +97,11 @@ fn {a:t@ype} merge_with
               else make_tree (p,b,lp(sl,T),sr) end
 in lp(s,t) end
 
-fn trie_of_word{n:nat} (word : string(n)) : trie '()
+fn trie_of_word (word : [n:nat] string(n)) : trie '()
 = let val n = length(word)
       fun lp{i,n:nat|i <= n} .<n-i>. 
       (word:string(n),i:size_t(i),n:size_t(n)) : trie '() =
-      if i+1 = n
+      if i < n
       then NT (L (char2uint0 (string_get_at_guint(word,i)), lp (word,i+1,n)))
       else BT ('(), E) 
 in lp (word, i2sz(0), n) end
@@ -123,21 +123,30 @@ fn{a:t@ype} lookup_trie{n:int} (word : list(char,n), dict : trie a) : bool
   case+ (word,dict) of
   | (nil(),BT(_,_)) => true
   | (nil(),_) => false
-  | (cons(c,word),t) => 
-  let val t = subtrie t
-   in case lookup(char2uint0(c),t) of
-   | Some t => lp (word,t)
-   | None => false end
+  | (cons(c,cs),t) => 
+  let val st = subtrie t in
+    case+ lookup(char2uint0(c),st) of
+    | Some t => lp (cs,t)
+    | None => false end
 in lp (word, dict) end
 
 val empty_dict = NT E
 
-val trie0 = trie_of_word ("cat")
-val trie1 = trie_of_word ("bat")
-val trie01 = merge_tries(trie0,trie1)
-val () = println!("true? ",lookup_trie (cons ('c',cons('a',cons('t',nil()))), trie01))
-val () = println!("false? ",lookup_trie (cons ('t',cons('a',cons('c',nil()))), trie01))
-val () = println!("true? ",lookup_trie (cons ('b',cons('a',cons('t',nil()))), trie01))
+fn make_dict{n:nat} (words : list([k:nat] string(k),n)) : trie '() =
+let fun lp{n:nat} (words:list([k:nat] string(k),n), dict:trie '()) : trie '() = 
+    case+ words of
+    | nil() => dict
+    | cons(word,ws) => lp (ws, merge_tries(dict, trie_of_word(word)))
+in lp(words,empty_dict) end
+
+val dict0 = merge_tries(trie_of_word("bat"),trie_of_word("cats"))
+val dict2 = merge_tries(trie_of_word("pinou"),dict0)
+val dict1 = merge_tries(trie_of_word("bats"),dict2)
+
+val () = println!("true? ",lookup_trie (cons ('p',cons('a',cons('t',cons('s',nil())))), 
+                          dict1))
+val () = println!("false? ",lookup_trie (cons ('t',cons('a',cons('c',nil()))), dict1))
+val () = println!("true? ",lookup_trie (cons ('b',cons('a',cons('t',nil()))), dict1))
 
 (* int __builtin_clz (unsigned int x) *)
 val egtree : patricia string = insert (8U, "pinou", singleton (12U, "ninou"))

@@ -1,8 +1,17 @@
 (library-directories "./..") (print-gensym #f)
 (import (patricia))
 
+(define (random-list hi n)
+  (if (= n 0)
+      '()
+      (cons (random hi) (random-list hi (1- n)))))
 (define T10 (fold-right insert empty (iota 10) (iota 10)))
-
+(define (mkt xs)
+  (fold-right insert empty xs xs))
+(define (happens? n)
+  (do ((i 0 (1+ i)))
+      ((= i n))
+    (merge-with + (mkt (random-list 10000000 10000)) (mkt (random-list 10000000 10000)))))
 (assert (zero? (tree-size empty)))
 (assert (empty? empty))
 (assert (= 1 (tree-size (insert 0 0 empty))))
