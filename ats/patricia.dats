@@ -30,8 +30,11 @@ fn is_bit_set (bit:BB, key:uint) : bool = g0uint_eq (1U, 1U land (key >> bit))
 fn branch_bit{n,m:nat|n != m} (p1:uint(n), p2:uint(m)) : BB =
 $UN.cast(63 - $extfcall(int, "__builtin_clzl", p1 lxor p2))
 
+fn branch_bit0{m,n:nat} (p1:uint(n), p2:uint(m)) : BB =
+$UN.cast(63 - $extfcall(int, "__builtin_clzl", p1 lxor p2))
+
 fn{a:t@ype} join_tree {n,m:nat|n != m}
-(px:uint(n), tx:patricia a, py:uint(m), ty:patricia a) : patricia a = 
+(px:uint(n), tx:patricia a, py:uint(m), ty:patricia a) : patricia a =
 let val bit = branch_bit(px,py)
     val msk = mask(bit,px) in
 if is_bit_set (bit,px) then B(msk,bit,ty,tx) else B (msk,bit,tx,ty) end
@@ -82,17 +85,17 @@ fn {a:t@ype} merge_with
   | (E(),_) => T
   | (_,E()) => S
   | (L(k,v),_) => insert_with (union, k, v, T)
-  | (_,L(k,v)) => insert_with (flip union, k, v, T)
-  | (B(p,b,sl,sr),B(q,c,tl,tr)) =>
+  | (_,L(k,v)) => insert_with (flip union, k, v, S)
+  | (B(p,b,sl,sr),B(q,c,tl,tr)) => (* this is wrong *)
   let val pk = g1ofg0(p) val qk = g1ofg0(q) in
     if pk != qk
-    then if true then join_tree (pk,T,qk,S) else E
-    else case+ compare (b,c) of 
-    | SGNN => if match_prefix (c,p,q) 
+    then join_tree (pk,T,qk,S)
+    else case+ compare (b,c) of
+    | SGNP => if match_prefix (c,q,p) && is_bit_set(c,p)
               then make_tree(q,c,tl,lp(S,tr))
               else make_tree(q,c,lp(S,tl),tr)
     | SGNZ => make_tree(p,b,lp(sl,tl),lp(sr,tr))
-    | SGNP => if match_prefix(b,p,q)
+    | SGNN => if match_prefix(b,p,q) && is_bit_set(b,q)
               then make_tree (p,b,sl,lp(sr,T))
               else make_tree (p,b,lp(sl,T),sr) end
 in lp(s,t) end
@@ -126,8 +129,19 @@ fn{a:t@ype} lookup_trie{n:int} (word : list(char,n), dict : trie a) : bool
   | (cons(c,cs),t) => 
   let val st = subtrie t in
     case+ lookup(char2uint0(c),st) of
-    | Some t => lp (cs,t)
-    | None => false end
+    | Some tt => lp (cs,tt)
+    | None() => false end
+in lp (word, dict) end
+
+fn{a:t@ype} trie_prefix{n:int} (word : list(char,n), dict : trie a) : bool
+= let fun{n:int} lp (word:list(char,n), dict:trie a) : bool = 
+  case+ (word,dict) of
+  | (nil(),_) => true
+  | (cons(c,cs),t) => 
+  let val st = subtrie t in
+    case+ lookup(char2uint0(c),st) of
+    | Some tt => lp (cs,tt)
+    | None() => false end
 in lp (word, dict) end
 
 val empty_dict = NT E
@@ -139,14 +153,10 @@ let fun lp{n:nat} (words:list([k:nat] string(k),n), dict:trie '()) : trie '() =
     | cons(word,ws) => lp (ws, merge_tries(dict, trie_of_word(word)))
 in lp(words,empty_dict) end
 
-val dict0 = merge_tries(trie_of_word("bat"),trie_of_word("cats"))
-val dict2 = merge_tries(trie_of_word("pinou"),dict0)
-val dict1 = merge_tries(trie_of_word("bats"),dict2)
-
-val () = println!("true? ",lookup_trie (cons ('p',cons('a',cons('t',cons('s',nil())))), 
-                          dict1))
-val () = println!("false? ",lookup_trie (cons ('t',cons('a',cons('c',nil()))), dict1))
-val () = println!("true? ",lookup_trie (cons ('b',cons('a',cons('t',nil()))), dict1))
+val the_dict = make_dict (cons("pinou",cons("cat",cons("bats",nil()))))
+val () = println!("pinou? ",lookup_trie (list_vt2t(string_explode("pinou")),the_dict))
+val () = println!("bats? ",lookup_trie (list_vt2t(string_explode("bats")),the_dict))
+val () = println!("bat?  ",lookup_trie (list_vt2t(string_explode("bat")),the_dict))
 
 (* int __builtin_clz (unsigned int x) *)
 val egtree : patricia string = insert (8U, "pinou", singleton (12U, "ninou"))
@@ -162,6 +172,7 @@ val () = println!("0 = ", is_bit_set(1,5U))
 val () = println!("1 = ", is_bit_set(0,5U))
 val () = println!("4 = ", branch_bit(5U,20U))
 val () = println!("3 = ", branch_bit(10U,5U))
+val () = println!("BLAHA = ", branch_bit0(3U,3U))
 val () = println!("pinou? ",lookup (8U, egtree_))
 val () = println!("ninou? ",lookup (12U, egtree_))
 val () = println!("none? ",lookup (120U, egtree_))
