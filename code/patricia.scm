@@ -44,6 +44,18 @@
 		(= (patricia-leaf-item S) (patricia-leaf-item T))))
 	  (else (and (empty? S) (empty? T))))))
 
+(define equal-with?
+  (lambda (S T equality)
+    (cond ((and (patricia? S) (patricia? T))
+	   (and (= (patricia-p S) (patricia-p T))
+		(= (patricia-b S) (patricia-b T))
+		(tree-equal? (patricia-L S) (patricia-L T))
+		(tree-equal? (patricia-R S) (patricia-R T))))
+	  ((and (patricia-leaf? S) (patricia-leaf? T))
+	   (and (= (patricia-leaf-key S) (patricia-leaf-key T))
+		(equality (patricia-leaf-item S) (patricia-leaf-item T))))
+	  (else (and (empty? S) (empty? T))))))
+
 (define empty 'empty)
 
 (define empty?

@@ -5,6 +5,7 @@
 	  empty
 	  patricia-tree?
 	  tree-equal?
+	  equal-with?
 	  empty?
 	  lookup
 	  lookup-with-default
