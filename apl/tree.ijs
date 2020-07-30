@@ -14,7 +14,4 @@ NB. simpler but quadratic parent conversion
 parent_quad =: * * (i: <:@{:)\
 
 NB. build path matrix from depth vector
-path_matrix =: 3 : 0
-dim=. #`(>./)`:0 y
->./\ |: >./\ (- y) |."0 1 (i.#y) ,. dim $ 0
-)
+path_matrix =: >./\ @: |: @: (>./\) @: (- |."0 1 i.@# ,. 0 $~ #`(>./)`:0)
