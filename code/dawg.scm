@@ -75,6 +75,15 @@
   (lambda (dawg)
     (t:maximum (dawg-paths dawg))))
 
+(define (dawg-equal? dog-a dog-b)
+  (and (dawg? dog-a)
+       (dawg? dog-b)
+       (eqv? (dawg-accept? dog-a)
+	     (dawg-accept? dog-b))
+       (t:equal-with? (dawg-paths dog-a)
+		      (dawg-paths dog-b)
+		      dawg-equal?)))
+
 (define ddawg-dchar
   (lambda (dawg char)
     (and (dawg? dawg)
@@ -84,7 +93,7 @@
 
 (define breed
   (lambda (words)
-    (define dawg-pound (make-hashtable equal-hash equal?))
+    (define dawg-pound (make-hashtable equal-hash dawg-equal?))
     (define (adopt dawg path)
       (cond ((null? path) dawg)
 	    ((t:lookup (car path) (dawg-paths dawg)) =>
@@ -93,7 +102,7 @@
 	     ;; the whole of the newly formed dawg
 	     ;; of note: (= (car path) (car c.d))
 	     (lambda (c.d)
-	       (format #t "path ~a~%" (integer->char (car c.d)))
+;;	       (format #t "path ~a~%" (integer->char (car c.d)))
 	       (make-dawg (dawg-accept? dawg)
 			  (t:insert (car path)
 				    (adopt (cdr c.d) (cdr path))
@@ -102,7 +111,7 @@
 	     ;; property is we found char not already in node at dawg.
 	     ;; minimize previously inserted word, and then insert
 	     ;; new suffix.
-	     (let-values (((puppy _) (groom dawg)))
+	     (let ((puppy (groom dawg)))
 	       (make-dawg (dawg-accept? puppy)
 			  (t:insert (car path)
 				    (singleton (cdr path))
@@ -110,36 +119,20 @@
     (define (groom dawg)
       (cond ((last-puppy dawg) =>
 	     (lambda (c.puppy)
-	       (let-values (((puppy name) (groom (cdr c.puppy))))
-		 (let ((name* `((,(dawg-accept? puppy) . ,(car c.puppy)) . ,name)))
-		   (cond ((hashtable-ref dawg-pound name #f) =>
-			  (lambda (suffix)
-			    (format #t "~a ~a ~s~%"
-				    'yes name* (path->string (map cdr name*)))
-			    (format #t "~%~%~a~%~%~a~%~%"
-				    puppy suffix)
-			    ;; issue, despite equal paths sometimes
-			    ;; suffix is a strict subset of puppy,
-			    ;; which effectively deletes words form
-			    ;; the dawg...
-			    (values (make-dawg (dawg-accept? dawg)
-					       (t:insert (car c.puppy)
-							 suffix
-							 (dawg-paths dawg)))
-				    name*)))
-			 (else
-			  (format #t "~a ~a ~s~%" 'no name (path->string (map cdr name)))
-			  (unless (hashtable-ref dawg-pound name #f)
-			    (hashtable-set! dawg-pound name puppy))
-			  (values dawg name*)))))))
-	    (else (values dawg '()))))
+	       (let ((puppy (groom (cdr c.puppy))))
+		 (cond ((hashtable-ref dawg-pound puppy #f) =>
+			(lambda (suffix)
+			  (make-dawg (dawg-accept? dawg)
+				     (t:insert (car c.puppy)
+					       suffix
+					       (dawg-paths dawg)))))
+		       (else (hashtable-set! dawg-pound puppy puppy) dawg)))))
+	    (else dawg)))
     (hashtable-set! dawg-pound '() adam&eve)
     (let walk ((dawg (make-dawg #f t:empty)) (words words))
-      (unless (null? words) (format #t "~%adding ~s~%" (car words)))
+;      (unless (null? words) (format #t "~%adding ~s~%" (car words)))
       (if (null? words)
-	  (let-values (((dawg _) (groom dawg)))
-	    (format #t "~a~%" (vector-length (hashtable-cells dawg-pound)))
-	    dawg)
+	  (groom dawg)
 	  (walk (adopt dawg (string->path (car words)))
 		(cdr words))))))
 
