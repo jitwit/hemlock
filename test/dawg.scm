@@ -3,7 +3,7 @@
 	(dawg))
 (load "../code/dawg.scm")
 (define lexicon
-  '("car" "cars" "car" "cats" "do" "dog" "dogs" "done" "ear" "ears" "eat" "eats"))
+  '("car" "cars" "cat" "cats" "do" "dog" "dogs" "done" "ear" "ears" "eat" "eats"))
 (define example-dawg
   (time (breed lexicon)))
 
@@ -13,6 +13,11 @@
   (assert (not (lookup-string-prefix "zzz" example-dawg)))
   (assert (lookup-string-exact "do" example-dawg))
   (assert (lookup-string-exact "cats" example-dawg))
+  (let ((cats (lookup-string-prefix "cat" example-dawg))
+	(eats (lookup-string-prefix "eat" example-dawg)))
+    ;; (assert (eq? cats eats))
+    'hmmm
+    )
   'ok)
 
 
