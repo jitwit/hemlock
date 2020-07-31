@@ -100,16 +100,15 @@
 					      (t:insert (car c.puppy)
 							suffix
 							(dawg-paths dawg)))))
-			      (hashtable-set! dawg-pound name* dawg)
 			      (values dawg name*))))
 			 (else
-			  (hashtable-set! dawg-pound name puppy)
+			  (unless (hashtable-ref dawg-pound name #f)
+			    (hashtable-set! dawg-pound name puppy))
 			  (values dawg name*)))))))
 	    (else (values dawg (hashtable-ref dawg-pound '() #f)))))
     (hashtable-set! dawg-pound '() (make-dawg #t t:empty))
     (let walk ((dawg (make-dawg #f t:empty)) (words words))
       (if (null? words)
-;;	  (begin (display (vector-length (hashtable-cells dawg-pound))) (newline))
 	  dawg
 	  (walk (adopt dawg (string->path (car words)))
 		(cdr words))))))
