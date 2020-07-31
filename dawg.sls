@@ -1,5 +1,6 @@
 #!chezscheme
 ;; (eval-when (compile) (optimize-level 3))
+;;;; work in progress
 (library (dawg)
   (export dawg?
 	  dawg-accept?

@@ -51,13 +51,15 @@
   (lambda (path)
     (let walk ((path path))
       (if (null? path)
-	  (make-dawg #t t:empty)
+	  adam&eve
 	  (let ((dawg (walk (cdr path))))
 	    (make-dawg #f (t:singleton (car path) dawg)))))))
 
 (define has-puppies?
   (lambda (dawg)
     (not (t:empty? (dawg-paths dawg)))))
+
+(define adam&eve (make-dawg #t t:empty))
 
 (define last-puppy
   (lambda (dawg)
@@ -76,12 +78,21 @@
     (define (adopt dawg path)
       (cond ((null? path) dawg)
 	    ((t:lookup (car path) (dawg-paths dawg)) =>
+	     ;; here, we are walking along the dawg along a common
+	     ;; prefix. t:insert destructively is ok because we return
+	     ;; the whole of the newly formed dawg
+	     ;; of note: (= (car path) (car c.d))
 	     (lambda (c.d)
+	       (format #t "path ~a~%" (integer->char (car c.d)))
 	       (make-dawg (dawg-accept? dawg)
 			  (t:insert (car path)
 				    (adopt (cdr c.d) (cdr path))
 				    (dawg-paths dawg)))))
 	    (else
+	     ;; property is we found char not already in node at dawg.
+	     ;; thence inserting destructively is ok. using singleton
+	     ;; maybe works against getting sharing, so this should be
+	     ;; changed along with groom?
 	     (let-values (((puppy _)
 			   (groom (make-dawg (dawg-accept? dawg)
 					     (t:insert (car path)
@@ -95,19 +106,30 @@
 		 (let ((name* `((,(dawg-accept? dawg) . ,(car c.puppy)) . ,name)))
 		   (cond ((hashtable-ref dawg-pound name* #f) =>
 			  (lambda (suffix)
+			    (format #t "~a ~a ~s~%"
+				    'yes
+				    name*
+				    (path->string (map cdr name*)))
 			    (let ((dawg
 				   (make-dawg (dawg-accept? dawg)
 					      (t:insert (car c.puppy)
 							suffix
 							(dawg-paths dawg)))))
+			      (unless (hashtable-ref dawg-pound name* #f)
+				(hashtable-set! dawg-pound name* dawg))
 			      (values dawg name*))))
 			 (else
+			  (format #t "~a  ~s~%"
+				  'no
+				  (path->string (map cdr name)))
 			  (unless (hashtable-ref dawg-pound name #f)
 			    (hashtable-set! dawg-pound name puppy))
 			  (values dawg name*)))))))
-	    (else (values dawg (hashtable-ref dawg-pound '() #f)))))
-    (hashtable-set! dawg-pound '() (make-dawg #t t:empty))
+	    (else (values dawg '()))))
+    (hashtable-set! dawg-pound '() adam&eve)
     (let walk ((dawg (make-dawg #f t:empty)) (words words))
+      (unless (null? words)
+	(format #t "~%adding ~s~%" (car words)))
       (if (null? words)
 	  dawg
 	  (walk (adopt dawg (string->path (car words)))
