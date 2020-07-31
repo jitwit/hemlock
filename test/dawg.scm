@@ -39,7 +39,9 @@
 	      (format #t "checking ~s~%" w)
 	      (assert (lookup-string-prefix w dawg-fr))
 	      (assert (lookup-string-exact w dawg-fr)))
-	    lexicon-fr)  
+	    lexicon-fr)
+  (assert (eq? (lookup-string-prefix "aien" example-dawg)
+	       (lookup-string-prefix "an" example-dawg)))  
   'ok)
 
 (define (basic-tests)

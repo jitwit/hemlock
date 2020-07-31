@@ -83,7 +83,7 @@
 	     ;; the whole of the newly formed dawg
 	     ;; of note: (= (car path) (car c.d))
 	     (lambda (c.d)
-	       (format #t "path ~a~%" (integer->char (car c.d)))
+;;	       (format #t "path ~a~%" (integer->char (car c.d)))
 	       (make-dawg (dawg-accept? dawg)
 			  (t:insert (car path)
 				    (adopt (cdr c.d) (cdr path))
@@ -105,10 +105,7 @@
 		 (let ((name* `((,(dawg-accept? puppy) . ,(car c.puppy)) . ,name)))
 		   (cond ((hashtable-ref dawg-pound name #f) =>
 			  (lambda (suffix)
-			    (format #t "~a ~a ~s~%"
-				    'yes
-				    name*
-				    (path->string (map cdr name*)))
+;;			    (format #t "~a ~a ~s~%" 'yes name* (path->string (map cdr name*)))
 			    (let ((dawg
 				   (make-dawg (dawg-accept? dawg)
 					      (t:insert (car c.puppy)
@@ -116,20 +113,15 @@
 							(dawg-paths dawg)))))
 			      (values dawg name*))))
 			 (else
-			  (format #t "~a ~a ~s~%"
-				  'no
-				  name*
-				  (path->string (map cdr name*)))
+;;			  (format #t "~a ~a ~s~%" 'no name* (path->string (map cdr name*)))
 			  (unless (hashtable-ref dawg-pound name #f)
 			    (hashtable-set! dawg-pound name puppy))
 			  (values dawg name*)))))))
-	    (else
-	     (format #t "END OF WORD~%")
-	     (values dawg '()))))
+;;	     (format #t "END OF WORD~%")
+	    (else (values dawg '()))))
     (hashtable-set! dawg-pound '() adam&eve)
     (let walk ((dawg (make-dawg #f t:empty)) (words words))
-      (unless (null? words)
-	(format #t "~%adding ~s~%" (car words)))
+;;c      (unless (null? words) (format #t "~%adding ~s~%" (car words)))
       (if (null? words)
 	  (let-values (((dawg _) (groom dawg)))
 	    dawg)
