@@ -112,3 +112,17 @@
 	  dawg
 	  (walk (adopt dawg (string->path (car words)))
 		(cdr words))))))
+
+(define (store-dawg obj file)
+  (when (file-exists? file)
+    (delete-file file))
+  (let ((out (open-file-output-port file)))
+    (fasl-write obj out)
+    (close-output-port out)))
+
+(define (fetch-dawg file)
+  (let ((in (open-file-input-port file)))
+    (let ((obj (fasl-read in)))
+      (close-input-port in)
+      (assert (dawg? obj))
+      obj)))
