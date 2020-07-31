@@ -90,21 +90,20 @@
 				    (dawg-paths dawg)))))
 	    (else
 	     ;; property is we found char not already in node at dawg.
-	     ;; thence inserting destructively is ok. using singleton
-	     ;; maybe works against getting sharing, so this should be
-	     ;; changed along with groom?
-	     (let-values (((puppy _)
-			   (groom (make-dawg (dawg-accept? dawg)
-					     (t:insert (car path)
-						       (singleton (cdr path))
-						       (dawg-paths dawg))))))
-	       puppy))))
+	     ;; minimize previously inserted word, and then insert
+	     ;; new suffix.
+	     (let-values (((puppy _) (groom dawg)))
+	       (make-dawg (dawg-accept? puppy)
+			  (t:insert (car path)
+				    (singleton (cdr path))
+				    (dawg-paths puppy)))))))
+    ;; minimizing
     (define (groom dawg)
       (cond ((last-puppy dawg) =>
 	     (lambda (c.puppy)
 	       (let-values (((puppy name) (groom (cdr c.puppy))))
-		 (let ((name* `((,(dawg-accept? dawg) . ,(car c.puppy)) . ,name)))
-		   (cond ((hashtable-ref dawg-pound name* #f) =>
+		 (let ((name* `((,(dawg-accept? puppy) . ,(car c.puppy)) . ,name)))
+		   (cond ((hashtable-ref dawg-pound name #f) =>
 			  (lambda (suffix)
 			    (format #t "~a ~a ~s~%"
 				    'yes
@@ -115,23 +114,25 @@
 					      (t:insert (car c.puppy)
 							suffix
 							(dawg-paths dawg)))))
-			      (unless (hashtable-ref dawg-pound name* #f)
-				(hashtable-set! dawg-pound name* dawg))
 			      (values dawg name*))))
 			 (else
-			  (format #t "~a  ~s~%"
+			  (format #t "~a ~a ~s~%"
 				  'no
-				  (path->string (map cdr name)))
+				  name*
+				  (path->string (map cdr name*)))
 			  (unless (hashtable-ref dawg-pound name #f)
 			    (hashtable-set! dawg-pound name puppy))
 			  (values dawg name*)))))))
-	    (else (values dawg '()))))
+	    (else
+	     (format #t "END OF WORD~%")
+	     (values dawg '()))))
     (hashtable-set! dawg-pound '() adam&eve)
     (let walk ((dawg (make-dawg #f t:empty)) (words words))
       (unless (null? words)
 	(format #t "~%adding ~s~%" (car words)))
       (if (null? words)
-	  dawg
+	  (let-values (((dawg _) (groom dawg)))
+	    dawg)
 	  (walk (adopt dawg (string->path (car words)))
 		(cdr words))))))
 
