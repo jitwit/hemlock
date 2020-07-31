@@ -7,14 +7,16 @@
     "dogs" "done" "ear" "ears" "eat" "eats"
     "yaps" "zap" "zaps"))
 (define lexicon-fr
-  '("ai" "aie" "aies" "aiet" "aient"
-    "ant" "assent" "asses" "assiez" "assions"
+  '(
+    "asses"
+    "eras"
+    "erais"
+    "eraient"
     ))
 (define example-dawg
-  (time (breed lexicon)))
+  (time (breed (sort string<? lexicon))))
 (define dawg-fr
-  (time (breed lexicon-fr))
-  )
+  (time (breed (sort string<? lexicon-fr))))
 
 (define (basic-tests-1)
   (assert (dawg? example-dawg))
@@ -25,7 +27,7 @@
 	    lexicon)
   (assert (not (lookup-string-prefix "zzz" example-dawg)))
   (assert (not (lookup-string-exact "yap" example-dawg)))
-  ;; check sharing or the g in dawg
+  (format #t "checking sharing, the G in DAWG~%")
   (assert (eq? (lookup-string-prefix "eats" example-dawg)
 	       (lookup-string-prefix "cats" example-dawg)))
   (assert (eq? (lookup-string-prefix "eat" example-dawg)
