@@ -14,10 +14,27 @@
 		(walk puppy (cdr path))
 		(values dawg path)))))))
 
+;;; string version
+(define lookup-string-prefix
+  (lambda (prefix dawg)
+    (let-values (((dawg suffix) (walk-dawg dawg (string->path prefix))))
+      (and (null? suffix) dawg))))
+
+;;; int list version
+(define lookup-prefix
+  (lambda (prefix dawg)
+    (let-values (((dawg suffix) (walk-dawg dawg prefix)))
+      (and (null? suffix) dawg))))
+
 ;;; like previous, but queries if delta(q0, path) in F
-(define lookup
-  (lambda (dawg path)
-    (let-values (((dawg path) (walk-dawg path)))
+(define lookup-string-exact
+  (lambda (word dawg)
+    (let-values (((dawg path) (walk-dawg dawg (string->path word))))
+      (and (null? path) (dawg-accept? dawg)))))
+
+(define lookup-exact
+  (lambda (path dawg)
+    (let-values (((dawg path) (walk-dawg dawg path)))
       (and (null? path) (dawg-accept? dawg)))))
 
 ;;; convert between strings & paths (list of ints)
@@ -46,9 +63,15 @@
   (lambda (dawg)
     (t:maximum (dawg-paths dawg))))
 
+(define ddawg-dchar
+  (lambda (dawg char)
+    (and (dawg? dawg)
+	 (t:lookup-with-default (char->integer char)
+				#f
+				(dawg-paths dawg)))))
+
 (define breed
   (lambda (words)
-    ;; good names: dawg-pound, puppies, litter, adopt, walk, groom
     (define dawg-pound (make-hashtable equal-hash equal?))
     (define (adopt dawg path)
       (cond ((null? path) dawg)
@@ -77,14 +100,15 @@
 					      (t:insert (car c.puppy)
 							suffix
 							(dawg-paths dawg)))))
-			      (hashtable-set! dawg-pound name* dawg)
+;;			      (hashtable-set! dawg-pound name* dawg)
 			      (values dawg name*))))
 			 (else
-			  (hashtable-set! dawg-pound name* dawg)
+			  (hashtable-set! dawg-pound name puppy)
 			  (values dawg name*)))))))
 	    (else (values dawg '()))))
     (let walk ((dawg (make-dawg #f t:empty)) (words words))
       (if (null? words)
+;;	  (begin (display (vector-length (hashtable-cells dawg-pound))) (newline))
 	  dawg
 	  (walk (adopt dawg (string->path (car words)))
 		(cdr words))))))
