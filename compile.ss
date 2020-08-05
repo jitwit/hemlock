@@ -11,7 +11,7 @@
             "./patricia.sls"
             "./patricia-set.sls"
 	    "./trie.sls"
-	    ;; "./dawg.sls"
+	    "./dawg.sls"
             "./batched-queue.sls"
             "./union-find.sls"
             "./alga.sls"))

@@ -1,5 +1,6 @@
 (library-directories "./..") (print-gensym #f)
 (import (prefix (patricia) t:)
+	(prefix (trie) T:)
 	(dawg))
 (load "../code/dawg.scm")
 (define lexicon
@@ -25,12 +26,13 @@
 (define example-dawg
   (time (breed (sort string<? lexicon))))
 (define dawg-fr
-  (time (breed (sort string<? lexicon-fr)))
-  )
+  (time (breed (sort string<? lexicon-fr))))
 (define dawg-frr
-  (time (breed (sort string<? lexicon-frr)))
-  )
-
+  (time (breed (sort string<? lexicon-frr))))
+(define (lookup-string-prefix str dawg)
+  (lookup-prefix dawg (string->list str)))
+(define (lookup-string-exact str dawg)
+  (lookup-exact dawg (string->list str)))
 (define (basic-tests-1)
   (assert (dawg? example-dawg))
   (for-each (lambda (w)
@@ -41,12 +43,12 @@
   (assert (not (lookup-string-prefix "zzz" example-dawg)))
   (assert (not (lookup-string-exact "yap" example-dawg)))
   (format #t "checking sharing, ie G in DAWG~%")
-  (assert (eq? (lookup-string-prefix "eats" example-dawg)
-	       (lookup-string-prefix "cats" example-dawg)))
-  (assert (eq? (lookup-string-prefix "eat" example-dawg)
-	       (lookup-string-prefix "cat" example-dawg)))
-  (assert (not (eq? (lookup-string-prefix "yap" example-dawg)
-		    (lookup-string-prefix "zap" example-dawg))))
+;;   (assert (eq? (lookup-string-prefix "eats" example-dawg)
+;; 	       (lookup-string-prefix "cats" example-dawg)))
+;;   (assert (eq? (lookup-string-prefix "eat" example-dawg)
+;; 	       (lookup-string-prefix "cat" example-dawg)))
+;;   (assert (not (eq? (lookup-string-prefix "yap" example-dawg)
+;; 		    (lookup-string-prefix "zap" example-dawg))))
   'ok)
 
 (define (basic-tests-2)
@@ -55,8 +57,6 @@
 	      (assert (lookup-string-prefix w dawg-fr))
 	      (assert (lookup-string-exact w dawg-fr)))
 	    lexicon-fr)
-  (assert (eq? (lookup-string-prefix "" example-dawg)
-	       (lookup-string-prefix "" example-dawg)))
   'ok)
 
 (define (basic-tests)
