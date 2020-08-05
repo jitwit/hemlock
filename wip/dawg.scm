@@ -3,18 +3,33 @@
 	(dawg))
 (load "../code/dawg.scm")
 (define lexicon
-  '("banana" "car" "cars" "cat" "cats" "do" "dog"
-    "dogs" "done" "ear" "ears" "eat" "eats"
-    "yaps" "zap" "zaps"))
+  '(;; "banana" "car" "cars" "cat" "cats" "do" "dog"
+    ;; "dogs" "done" "ear" "ears" "eat" "eats"
+    ;; "yaps" "zap" "zaps"
+    "cats" "eats"
+    "yaps" "zap" "zaps"
+    ))
 (define lexicon-fr
   '("a" "ai" "aie" "aies" "aiet" "aient"
     "ant" "as" "assent" "asses" "assiez" "assions"
     "e" "ent" "er" "era" "eras" "eari" "erais" "earit" "eraient"
     ))
+(define lexicon-frr
+  '(
+    "asses"
+    "erais"
+    "eras"
+    "earit"
+    "eraient"
+    ))
 (define example-dawg
   (time (breed (sort string<? lexicon))))
 (define dawg-fr
-  (time (breed (sort string<? lexicon-fr))))
+  (time (breed (sort string<? lexicon-fr)))
+  )
+(define dawg-frr
+  (time (breed (sort string<? lexicon-frr)))
+  )
 
 (define (basic-tests-1)
   (assert (dawg? example-dawg))
@@ -40,8 +55,8 @@
 	      (assert (lookup-string-prefix w dawg-fr))
 	      (assert (lookup-string-exact w dawg-fr)))
 	    lexicon-fr)
-  (assert (eq? (lookup-string-prefix "aien" example-dawg)
-	       (lookup-string-prefix "an" example-dawg)))  
+  (assert (eq? (lookup-string-prefix "" example-dawg)
+	       (lookup-string-prefix "" example-dawg)))
   'ok)
 
 (define (basic-tests)

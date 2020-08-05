@@ -3,7 +3,7 @@
 (import (chezscheme))
 
 ;; (eval-when (compile) (optimize-level 3))
-(compile-profile 'source)
+;; (compile-profile 'source)
 (for-each compile-library
           '("./pairing-heap.sls"
             "./vector.sls"
@@ -11,7 +11,7 @@
             "./patricia.sls"
             "./patricia-set.sls"
 	    "./trie.sls"
-	    "./dawg.sls"
+	    ;; "./dawg.sls"
             "./batched-queue.sls"
             "./union-find.sls"
             "./alga.sls"))
