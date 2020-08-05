@@ -69,8 +69,9 @@
     (define end 0)
     (define (adopt puppy puppies)
       (if (null? puppies)
-	  (list (fxior 2 puppy))
+	  (list (fxior 2 puppy)) ; last child
 	  (cons puppy puppies)))
+    (hashtable-set! pound '() 0)
     (let lp ((eow #f) (char 0) (dict dict))
       (let ((puppies
 	     (fold-right (lambda (n.d ps)
@@ -84,11 +85,10 @@
 			   #f
 			   eow
 			   (or (hashtable-ref pound puppies #f)
-			       (begin
-				 (let ((ix* (fx1+ ix)))
-				   (hashtable-set! pound puppies ix*)
-				   (set! ix (fx+ ix (length puppies)))
-				   ix*))))))
+			       (let ((ix* (fx1+ ix)))
+				 (hashtable-set! pound puppies ix*)
+				 (set! ix (fx+ ix (length puppies)))
+				 ix*)))))
 	  (set! end ref)
 	  ref)))
     (values pound ix end)))
