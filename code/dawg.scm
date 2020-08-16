@@ -52,8 +52,7 @@
 (define puppies
   (lambda (dawg)
     (define bytes (dawg-bytes dawg))
-    (if (and (dawg? dawg) (not (= (dawg-who dawg)
-				  (dawg-puppy dawg))))
+    (if (and (dawg? dawg) (fx< 0 (dawg-puppy dawg)))
 	(let walk ((ix (dawg-puppy dawg)) (puppies '()))
 	  (let ((puppy (decode bytes ix)))
 	    (if (dawg-last? puppy)
