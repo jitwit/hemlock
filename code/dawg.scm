@@ -14,13 +14,16 @@
   (lambda (byte)
     (fxlogbit? 1 byte)))
 
+(define maximum-allowed-unicode
+  (fx1- (fxsll 1 21)))
+
 (define char
   (lambda (byte)
-    (fxlogand 255 (fxsrl byte 2))))
+    (fxlogand maximum-allowed-unicode (fxsrl byte 2))))
 
 (define pointer
   (lambda (byte)
-    (fxsrl byte 10)))
+    (fxsrl byte 23)))
 
 (define decode
   (lambda (bytes ref)
@@ -28,7 +31,7 @@
 
 (define encode
   (lambda (char last-child? end-of-word? pointer)
-    (fxior (fxsll pointer 10)
+    (fxior (fxsll pointer 23)
 	   (fxsll char 2)
 	   (fxsll (bool->byte last-child?) 1)
 	   (bool->byte end-of-word?))))
