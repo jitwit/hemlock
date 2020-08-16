@@ -4,11 +4,9 @@
 (library (dawg)
   (export dawg?
 	  dawg-bytes
-	  dawg-who
-	  dawg-puppy
-	  dawg-char
-	  dawg-last?
-	  dawg-eow?
+	  dawg-byte
+	  eow?
+	  char
 	  root
 	  puppies
 	  trie->dawg

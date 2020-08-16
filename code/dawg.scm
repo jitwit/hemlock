@@ -1,6 +1,6 @@
 ;; based on  https://hackage.haskell.org/package/packed-dawg
 (define-record-type dawg
-  (fields bytes who puppy char last? eow?))
+  (fields bytes byte))
 
 (define bool->byte
   (lambda (bool)
@@ -24,13 +24,7 @@
 
 (define decode
   (lambda (bytes ref)
-    (let ((puppy (fxvector-ref bytes ref)))
-      (make-dawg bytes
-		 ref
-		 (pointer puppy)
-		 (integer->char (char puppy))
-		 (last-puppy? puppy)
-		 (eow? puppy)))))
+    (make-dawg bytes (fxvector-ref bytes ref))))
 
 (define encode
   (lambda (char last-child? end-of-word? pointer)
@@ -45,19 +39,18 @@
 
 (define first-puppy
   (lambda (dawg)
-    (and (dawg? dawg)
-	 (decode (dawg-bytes dawg)
-		 (dawg-puppy dawg)))))
+    (pointer (dawg-byte dawg))))
 
 (define puppies
   (lambda (dawg)
     (define bytes (dawg-bytes dawg))
-    (if (and (dawg? dawg) (fx< 0 (dawg-puppy dawg)))
-	(let walk ((ix (dawg-puppy dawg)) (puppies '()))
-	  (let ((puppy (decode bytes ix)))
-	    (if (dawg-last? puppy)
-		(cons puppy puppies)
-		(walk (fx1+ ix) (cons puppy puppies)))))
+    (define start (pointer (dawg-byte dawg)))
+    (if (and start (fx< 0 start))
+	(let walk ((ix start) (puppies '()))
+	  (let ((puppy (fxvector-ref bytes ix)))
+	    (if (last-puppy? puppy)
+		(cons (make-dawg bytes puppy) puppies)
+		(walk (fx1+ ix) (cons (make-dawg bytes puppy) puppies)))))
 	'())))
 
 ;; take a trie and find common suffixes
@@ -109,9 +102,9 @@
     (decode dawg (fx1+ nodes))))
 
 (define step
-  (lambda (dawg char)
+  (lambda (dawg x)
     (find (lambda (puppy)
-	    (char=? (dawg-char puppy) char))
+	    (char=? (char->integer (char (dawg-byte puppy))) x))
 	  (puppies dawg))))
 
 (define lookup-prefix
@@ -124,7 +117,7 @@
 (define lookup-exact
   (lambda (dawg chars)
     (let ((dawg (lookup-prefix dawg chars)))
-      (and (dawg? dawg) (dawg-eow? dawg)))))
+      (and (dawg? dawg) (eow? (dawg-byte dawg))))))
 
 (define store-dawg
   (lambda (obj file)
