@@ -73,15 +73,14 @@
 	  (cons puppy puppies)))
     (hashtable-set! pound '() 0)
     (let lp ((eow #f) (char 0) (dict dict))
-      (let ((puppies
-	     (fold-right (lambda (n.d ps)
-			   (adopt (lp (and (T:trie-element (cdr n.d)) #t)
-				      (car n.d)
-				      (cdr n.d))
-				  ps))
-			 '()
-			 (reverse
-			  (t:tree->alist (T:trie-tries dict))))))
+      (let ((puppies (t:tree-ifold-left
+		      (lambda (ps n d)
+			(adopt (lp (and (T:trie-element d) #t)
+				   n
+				   d)
+			       ps))
+		      '()
+		      (T:trie-tries dict))))
 	(let ((ref (encode char
 			   #f
 			   eow
