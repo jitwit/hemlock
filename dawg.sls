@@ -11,6 +11,7 @@
 	  puppies
 	  trie->dawg
 	  step
+	  lookup-char
 	  lookup-prefix
 	  lookup-exact
 	  store-dawg

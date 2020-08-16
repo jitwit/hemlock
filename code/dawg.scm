@@ -103,9 +103,17 @@
 
 (define step
   (lambda (dawg x)
-    (find (lambda (puppy)
-	    (char=? (integer->char (char (dawg-byte puppy))) x))
-	  (puppies dawg))))
+    (define bytes (dawg-bytes dawg))
+    (define start (pointer (dawg-byte dawg)))
+    (if (and start (fx< 0 start))
+	(let walk ((ix start))
+	  (let* ((puppy (fxvector-ref bytes ix))
+		 (y (integer->char (char puppy))))
+	    (if (char=? x y)
+		(make-dawg bytes puppy)
+		(and (char<? x y)
+		     (not (last-puppy? puppy))
+		     (walk (fx1+ ix)))))))))
 
 (define lookup-prefix
   (lambda (dawg chars)
@@ -113,6 +121,10 @@
 		 (and dawg (step dawg char)))
 	       dawg
 	       chars)))
+
+(define lookup-char
+  (lambda (dawg char)
+    (step dawg char)))
 
 (define lookup-exact
   (lambda (dawg chars)
