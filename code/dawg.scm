@@ -80,7 +80,8 @@
 				      (cdr n.d))
 				  ps))
 			 '()
-			 (t:tree->alist (T:trie-tries dict)))))
+			 (reverse
+			  (t:tree->alist (T:trie-tries dict))))))
 	(let ((ref (encode char
 			   #f
 			   eow
@@ -95,7 +96,8 @@
 
 (define trie->dawg
   (lambda (trie)
-    (define-values (table nodes root) (find-common-suffixes trie))
+    (define-values (table nodes root) (find-common-suffixes
+				       trie))
     (define dawg (make-fxvector (fx+ nodes 2)))
     (fxvector-set! dawg (fx1+ nodes) (fxior root 2))
     (vector-for-each (lambda (path.ref)

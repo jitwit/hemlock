@@ -1,4 +1,5 @@
 (library-directories "./..") (print-gensym #f)
+(system "cd .. && make")
 (import (prefix (patricia) t:)
 	(prefix (trie) T:)
 	(dawg))
