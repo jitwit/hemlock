@@ -104,7 +104,7 @@
 (define step
   (lambda (dawg x)
     (find (lambda (puppy)
-	    (char=? (char->integer (char (dawg-byte puppy))) x))
+	    (char=? (integer->char (char (dawg-byte puppy))) x))
 	  (puppies dawg))))
 
 (define lookup-prefix
